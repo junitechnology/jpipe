@@ -32,6 +32,33 @@ func (channel *Channel[T]) ForEach(function func(T), options ...ForEachOptions) 
 	return node.Done()
 }
 
+type ReduceOptions[R any] struct {
+	InitialState R
+}
+
+// Reduce performs a stateful reduction of the input values.
+// The reducer receives the current state and the current value, and must return the new state.
+// The returned channel will return the final state when all input values have been processed.
+//
+// Example. Calculating the sum of all input values:
+//
+//   Reduce(input, func(acc int64, value int) int64 { return acc + int64(value) })
+func Reduce[T any, R any](channel *Channel[T], reducer func(R, T) R, options ...ReduceOptions[R]) <-chan R {
+	opts := getOptions(ReduceOptions[R]{}, options)
+	resultChannel := make(chan R, 1)
+	worker := func(node workerNode[T, any]) {
+		var state R = opts.InitialState
+		defer func() { resultChannel <- state }()
+		node.LoopInput(0, func(value T) bool {
+			state = reducer(state, value)
+			return true
+		})
+	}
+
+	newSinkPipelineNode("Reduce", channel, worker)
+	return resultChannel
+}
+
 // ToSlice puts all values coming from the input channel in a slice.
 // It returns a channel that will return the slice when all input values have been processed.
 func (channel *Channel[T]) ToSlice() <-chan []T {
@@ -123,6 +150,24 @@ func (channel *Channel[T]) Last() <-chan T {
 	}
 
 	newSinkPipelineNode("Last", channel, worker)
+	return resultChannel
+}
+
+// Count counts input elements.
+// The final count is sent to the return channel when all input values are red, or the pipeline is canceled.
+//
+func (channel *Channel[T]) Count() <-chan int64 {
+	resultChannel := make(chan int64, 1)
+	worker := func(node workerNode[T, any]) {
+		count := int64(0)
+		defer func() { resultChannel <- count }()
+		node.LoopInput(0, func(value T) bool {
+			count++
+			return true
+		})
+	}
+
+	newSinkPipelineNode("Count", channel, worker)
 	return resultChannel
 }
 
