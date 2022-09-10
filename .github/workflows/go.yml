@@ -23,3 +23,6 @@ jobs:
 
     - name: Test
       run: go test -v ./...
+
+    - name: Publish
+      run: go list -v
