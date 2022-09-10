@@ -23,9 +23,3 @@ jobs:
 
     - name: Test
       run: go test -v ./...
-
-    - name: Proxy
-      run: echo $GOPROXY
-
-    - name: Publish
-      run: go list -v
