@@ -1,4 +1,4 @@
-module gitlab.com/junitechnology/jpipe
+module github.com/junitechnology/jpipe
 
 go 1.18
 
