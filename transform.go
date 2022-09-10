@@ -13,7 +13,7 @@ type MapOptions struct {
 // Map transforms every input value with a mapper function and sends the results to the output channel.
 //
 // Example:
-//  func(i int) int { return i + 10 }
+//  Map(input, func(i int) int { return i + 10 })
 //
 // input : 0--1--2--3--4--5--X
 //
@@ -46,7 +46,7 @@ type FlatMapOptions struct {
 // Map transforms every input value into a Channel and for each of those, it sends all values to the output channel.
 //
 // Example:
-//  func(i int) *Channel[int] { return FromSlice([]int{i, i + 10}) }
+//  FlatMap(input, func(i int) *Channel[int] { return FromSlice([]int{i, i + 10}) })
 //
 // input : 0------1------2------3------4------5------X
 //

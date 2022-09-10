@@ -63,6 +63,64 @@ func TestForEach(t *testing.T) {
 	})
 }
 
+func TestReduce(t *testing.T) {
+	t.Run("Reduces all values", func(t *testing.T) {
+		pipeline := jpipe.New(context.TODO())
+		channel := jpipe.FromSlice(pipeline, []int{1, 2, 3})
+
+		result := <-jpipe.Reduce(channel, func(acc int64, value int) int64 { return acc + int64(value) })
+
+		assert.Equal(t, int64(6), result)
+		assertPipelineDone(t, pipeline, 10*time.Millisecond)
+	})
+
+	t.Run("Exits early on pipeline canceled", func(t *testing.T) {
+		pipeline := jpipe.New(context.TODO())
+		goChannel := make(chan int)
+		channel := jpipe.FromGoChannel(pipeline, goChannel)
+
+		resultChannel := jpipe.Reduce(channel, func(acc int64, value int) int64 { return acc + int64(value) })
+
+		goChannel <- 1
+		goChannel <- 2
+		time.Sleep(time.Millisecond) // Give time for the last value to be processed
+		cancelPipeline(pipeline)
+		result := <-resultChannel
+
+		assert.Equal(t, int64(3), result)
+		assertPipelineDone(t, pipeline, 10*time.Millisecond)
+	})
+}
+
+func TestCount(t *testing.T) {
+	t.Run("Counts all values", func(t *testing.T) {
+		pipeline := jpipe.New(context.TODO())
+		channel := jpipe.FromSlice(pipeline, []int{10, 20, 30})
+
+		result := <-channel.Count()
+
+		assert.Equal(t, int64(3), result)
+		assertPipelineDone(t, pipeline, 10*time.Millisecond)
+	})
+
+	t.Run("Exits early on pipeline canceled", func(t *testing.T) {
+		pipeline := jpipe.New(context.TODO())
+		goChannel := make(chan int)
+		channel := jpipe.FromGoChannel(pipeline, goChannel)
+
+		resultChannel := channel.Count()
+
+		goChannel <- 10
+		goChannel <- 20
+		time.Sleep(time.Millisecond) // Give time for the last value to be processed
+		cancelPipeline(pipeline)
+		result := <-resultChannel
+
+		assert.Equal(t, int64(2), result)
+		assertPipelineDone(t, pipeline, 10*time.Millisecond)
+	})
+}
+
 func TestToSlice(t *testing.T) {
 	slice := []int{1, 2, 3}
 	pipeline := jpipe.New(context.TODO())

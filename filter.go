@@ -3,7 +3,7 @@ package jpipe
 // Filter sends to the output channel only the input values that satisfy the predicate.
 //
 // Example:
-//  channel.Filter(func(i int) bool { return i%2==1 })
+//  input.Filter(func(i int) bool { return i%2==1 })
 //
 // input : 0--1--2--3--4--5-X
 //
