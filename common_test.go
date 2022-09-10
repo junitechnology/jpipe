@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/junitechnology/jpipe"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/junitechnology/jpipe"
 )
 
 func drainChannel[T any](channel *jpipe.Channel[T]) []T {
