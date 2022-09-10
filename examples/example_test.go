@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.com/junitechnology/jpipe"
+	"github.com/junitechnology/jpipe"
 )
 
 func TestWithGo(t *testing.T) {

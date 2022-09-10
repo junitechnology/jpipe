@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/junitechnology/jpipe"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/junitechnology/jpipe"
 	"golang.org/x/exp/slices"
 )
 
