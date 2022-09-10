@@ -25,4 +25,4 @@ jobs:
       run: go test -v ./...
 
     - name: Publish
-      run: go list -m
+      run: go list -m github.com/junitechnology/jpipe
