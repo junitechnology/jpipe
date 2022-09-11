@@ -9,6 +9,8 @@ import (
 //
 // Example:
 //
+//  output := Merge(input1, input2)
+//
 // input1: 0----1----2------3-X
 //
 // input2: -----5------6------X
@@ -39,6 +41,8 @@ func Merge[T any](inputs ...*Channel[T]) *Channel[T] {
 // until the first channel is closed.
 //
 // Example:
+//
+//  output := Concat(input1, input2)
 //
 // input 1: 0----1----2------3-X
 //

@@ -33,7 +33,9 @@ func (input *Channel[T]) Tap(function func(T)) *Channel[T] {
 // No value is sent to the output while that interval is active.
 // This operator is prone to generating backpressure, so use it with care, and consider adding a Buffer before it.
 //
-// Example with interval = 4*time.Millisecond (assume each hyphen is 1 ms)
+// Example(assume each hyphen is 1 ms):
+//
+//  output := input.Interval(4*time.Millisecond)
 //
 // input : 0--1--2--------------3--4--5--X
 //
@@ -70,13 +72,15 @@ type BroadcastOptions struct {
 // This is a particularly annoying type of backpressure, cause not only does it block the input, it also blocks other consumers.
 // To avoid this, consider using BroadcastOptions.BufferSize and the output channels will be buffered, with no need for an extra Buffer operator.
 //
-// Example with interval = 4*time.Millisecond (assume each hyphen is 1 ms)
+// Example (assume each hyphen is 1 ms):
+//
+//  outputs := input.Broadcast(4*time.Millisecond)
 //
 // input  : 0--1--2--3--4--5---X
 //
 // output1: 0--1--2--3--4--5---X
 //
-// output1: -0--1--2--3--4--5--X
+// output2: -0--1--2--3--4--5--X
 func (input *Channel[T]) Broadcast(numOutputs int, options ...BroadcastOptions) []*Channel[T] {
 	opts := getOptions(BroadcastOptions{}, options)
 	worker := func(node workerNode[T, T]) {
