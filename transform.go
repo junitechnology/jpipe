@@ -3,12 +3,9 @@ package jpipe
 import (
 	"sync"
 	"time"
-)
 
-type MapOptions struct {
-	Concurrency int
-	//Ordered bool
-}
+	"github.com/junitechnology/jpipe/options"
+)
 
 // Map transforms every input value with a mapper function and sends the results to the output channel.
 //
@@ -18,11 +15,11 @@ type MapOptions struct {
 //
 //  input : 0--1--2--3--4--5--X
 //  output: 10-11-12-13-14-15-X
-func Map[T any, R any](input *Channel[T], mapper func(T) R, options ...MapOptions) *Channel[R] {
-	opts := getOptions(MapOptions{Concurrency: 1}, options)
+func Map[T any, R any](input *Channel[T], mapper func(T) R, opts ...options.MapOptions) *Channel[R] {
+	opt := getOptions(options.MapOptions{Concurrency: 1}, opts)
 	worker := func(node workerNode[T, R]) {
 		var wg sync.WaitGroup
-		for i := 0; i < opts.Concurrency; i++ {
+		for i := 0; i < opt.Concurrency; i++ {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
@@ -38,11 +35,6 @@ func Map[T any, R any](input *Channel[T], mapper func(T) R, options ...MapOption
 	return output
 }
 
-type FlatMapOptions struct {
-	Concurrency int
-	//Ordered bool
-}
-
 // Map transforms every input value into a Channel and for each of those, it sends all values to the output channel.
 //
 // Example:
@@ -51,11 +43,11 @@ type FlatMapOptions struct {
 //
 //  input : 0------1------2------3------4------5------X
 //  output: 0-10---1-11---2-12---3-13---4-14---5-15---X
-func FlatMap[T any, R any](input *Channel[T], mapper func(T) *Channel[R], options ...FlatMapOptions) *Channel[R] {
-	opts := getOptions(FlatMapOptions{Concurrency: 1}, options)
+func FlatMap[T any, R any](input *Channel[T], mapper func(T) *Channel[R], opts ...options.FlatMapOptions) *Channel[R] {
+	opt := getOptions(options.FlatMapOptions{Concurrency: 1}, opts)
 	worker := func(node workerNode[T, R]) {
 		var wg sync.WaitGroup
-		for i := 0; i < opts.Concurrency; i++ {
+		for i := 0; i < opt.Concurrency; i++ {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
@@ -79,11 +71,6 @@ func FlatMap[T any, R any](input *Channel[T], mapper func(T) *Channel[R], option
 	return output
 }
 
-type BatchOptions struct {
-	Size    int
-	Timeout time.Duration
-}
-
 // Batch batches input values in slices and sends those slices to the output channel
 // Batches can be limited by size with BatchOptions.Size and by time with BatchOptions.Timeout.
 // It's possible to use size-only, time-only or size-and-time strategies.
@@ -94,11 +81,11 @@ type BatchOptions struct {
 //
 //  input : 0--1----2----------3------4--5----------6--7----X
 //  output: --------{1-2-3}--------------{3-4-5}-------{6-7}X
-func Batch[T any](input *Channel[T], options ...BatchOptions) *Channel[[]T] {
-	opts := getOptions(BatchOptions{}, options)
+func Batch[T any](input *Channel[T], opts ...options.BatchOptions) *Channel[[]T] {
+	opt := getOptions(options.BatchOptions{}, opts)
 	nextTimeout := func() <-chan time.Time {
-		if opts.Timeout > 0 {
-			return time.After(opts.Timeout)
+		if opt.Timeout > 0 {
+			return time.After(opt.Timeout)
 		}
 		return make(<-chan time.Time)
 	}
@@ -124,7 +111,7 @@ func Batch[T any](input *Channel[T], options ...BatchOptions) *Channel[[]T] {
 						break
 					}
 					batch = append(batch, value)
-					if len(batch) == opts.Size {
+					if len(batch) == opt.Size {
 						flush = true
 					}
 				case <-timeout:

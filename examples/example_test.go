@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/junitechnology/jpipe"
+	"github.com/junitechnology/jpipe/options"
 )
 
 func TestWithGo(t *testing.T) {
@@ -57,7 +58,7 @@ func TestWithJPipe(t *testing.T) {
 	pipeline := jpipe.NewPipeline(jpipe.Config{Context: ctx})
 	jpipe.FromSlice(pipeline, []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}).
 		Filter(func(i int) bool { return i%2 == 1 }).
-		ForEach(downloadInvoice, jpipe.ForEachOptions{Concurrency: 10})
+		ForEach(downloadInvoice, options.ForEachOptions{Concurrency: 10})
 
 	end := time.Now()
 	fmt.Printf("Total time: %s\n", end.Sub(start))

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/junitechnology/jpipe"
+	"github.com/junitechnology/jpipe/options"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/slices"
 )
@@ -53,7 +54,7 @@ func TestForEach(t *testing.T) {
 			lock.Lock()
 			values = append(values, value)
 			lock.Unlock()
-		}, jpipe.ForEachOptions{Concurrency: 5})
+		}, options.ForEachOptions{Concurrency: 5})
 		elapsed := time.Since(start)
 
 		slices.Sort(values) // The output order with concurrency is unpredictable

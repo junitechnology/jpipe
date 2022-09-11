@@ -1,6 +1,10 @@
 package jpipe
 
-import "time"
+import (
+	"time"
+
+	"github.com/junitechnology/jpipe/options"
+)
 
 // Buffer transparently passes input values to the output channel, but the output channel is buffered.
 // It is useful to avoid backpressure from slow consumers.
@@ -61,10 +65,6 @@ func (input *Channel[T]) Interval(interval func(value T) time.Duration) *Channel
 	return output
 }
 
-type BroadcastOptions struct {
-	BufferSize int
-}
-
 // Broadcast broadcasts each input value to every output channel.
 // The next input value is not read by this operator until all output channels have read the current one.
 // Bear in mind that if one of the output channels is a slow consumer, it may block the other consumers.
@@ -78,15 +78,15 @@ type BroadcastOptions struct {
 //  input  : 0--1--2--3--4--5---X
 //  output1: 0--1--2--3--4--5---X
 //  output2: -0--1--2--3--4--5--X
-func (input *Channel[T]) Broadcast(numOutputs int, options ...BroadcastOptions) []*Channel[T] {
-	opts := getOptions(BroadcastOptions{}, options)
+func (input *Channel[T]) Broadcast(numOutputs int, opts ...options.BroadcastOptions) []*Channel[T] {
+	opt := getOptions(options.BroadcastOptions{}, opts)
 	worker := func(node workerNode[T, T]) {
 		node.LoopInput(0, func(value T) bool {
 			return node.Send(value)
 		})
 	}
 
-	_, outputs := newPipelineNode("Broadcast", input.getPipeline(), []*Channel[T]{input}, numOutputs, opts.BufferSize, worker)
+	_, outputs := newPipelineNode("Broadcast", input.getPipeline(), []*Channel[T]{input}, numOutputs, opt.BufferSize, worker)
 	return outputs
 }
 
