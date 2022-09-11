@@ -11,13 +11,6 @@ type Item[T any] struct {
 	Ctx   context.Context
 }
 
-type KeepStrategy string
-
-const (
-	KEEP_FIRST KeepStrategy = "KEEP_FIRST"
-	KEEP_LAST  KeepStrategy = "KEEP_LAST"
-)
-
 func getOptions[T any](defaultOptions T, options []T) T {
 	if len(options) > 0 {
 		return options[0]

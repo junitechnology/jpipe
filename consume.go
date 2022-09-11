@@ -30,10 +30,6 @@ func (input *Channel[T]) ForEach(function func(T), opts ...options.ForEachOption
 	return node.Done()
 }
 
-type ReduceOptions[R any] struct {
-	InitialState R
-}
-
 // Reduce performs a stateful reduction of the input values.
 // The reducer receives the current state and the current value, and must return the new state.
 // The final state is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
@@ -44,11 +40,11 @@ type ReduceOptions[R any] struct {
 //
 //  input : 0--1--2--3--X
 //  output: ------------6
-func Reduce[T any, R any](input *Channel[T], reducer func(R, T) R, options ...ReduceOptions[R]) <-chan R {
-	opts := getOptions(ReduceOptions[R]{}, options)
+func Reduce[T any, R any](input *Channel[T], reducer func(R, T) R, opts ...options.ReduceOptions[R]) <-chan R {
+	opt := getOptions(options.ReduceOptions[R]{}, opts)
 	resultChannel := make(chan R, 1)
 	worker := func(node workerNode[T, any]) {
-		var state R = opts.InitialState
+		var state R = opt.InitialState
 		defer func() { resultChannel <- state }()
 		node.LoopInput(0, func(value T) bool {
 			state = reducer(state, value)
@@ -84,10 +80,6 @@ func (input *Channel[T]) ToSlice() <-chan []T {
 	return resultChannel
 }
 
-type ToMapOptions struct {
-	Keep KeepStrategy
-}
-
 // ToMap puts all values coming from the input channel in a map, using the getKey parameter to calculate the key.
 // The resulting map is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
 //
@@ -97,15 +89,15 @@ type ToMapOptions struct {
 //
 //  input : A_0--B_1--C_2--X
 //  output: ---------------{A:A_0, B:B_1, C:C_2}
-func ToMap[T any, K comparable](input *Channel[T], getKey func(T) K, options ...ToMapOptions) <-chan map[K]T {
-	opts := getOptions(ToMapOptions{Keep: KEEP_FIRST}, options)
+func ToMap[T any, K comparable](input *Channel[T], getKey func(T) K, opts ...options.ToMapOptions) <-chan map[K]T {
+	opt := getOptions(options.ToMapOptions{Keep: options.KEEP_FIRST}, opts)
 	resultChannel := make(chan map[K]T, 1)
 	worker := func(node workerNode[T, any]) {
 		resultMap := map[K]T{}
 		defer func() { resultChannel <- resultMap }()
 		node.LoopInput(0, func(value T) bool {
 			key := getKey(value)
-			if opts.Keep == KEEP_FIRST {
+			if opt.Keep == options.KEEP_FIRST {
 				if _, ok := resultMap[key]; ok {
 					return true
 				}

@@ -24,3 +24,18 @@ type BatchOptions struct {
 type BroadcastOptions struct {
 	BufferSize int
 }
+
+type ToMapOptions struct {
+	Keep KeepStrategy
+}
+
+type ReduceOptions[R any] struct {
+	InitialState R
+}
+
+type KeepStrategy string
+
+const (
+	KEEP_FIRST KeepStrategy = "KEEP_FIRST"
+	KEEP_LAST  KeepStrategy = "KEEP_LAST"
+)
