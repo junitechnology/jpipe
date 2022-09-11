@@ -16,9 +16,8 @@ type MapOptions struct {
 //
 //  output := Map(input, func(i int) int { return i + 10 })
 //
-// input : 0--1--2--3--4--5--X
-//
-// output: 10-11-12-13-14-15-X
+//  input : 0--1--2--3--4--5--X
+//  output: 10-11-12-13-14-15-X
 func Map[T any, R any](input *Channel[T], mapper func(T) R, options ...MapOptions) *Channel[R] {
 	opts := getOptions(MapOptions{Concurrency: 1}, options)
 	worker := func(node workerNode[T, R]) {
@@ -50,9 +49,8 @@ type FlatMapOptions struct {
 //
 //  output := FlatMap(input, func(i int) *Channel[int] { return FromSlice([]int{i, i + 10}) })
 //
-// input : 0------1------2------3------4------5------X
-//
-// output: 0-10---1-11---2-12---3-13---4-14---5-15---X
+//  input : 0------1------2------3------4------5------X
+//  output: 0-10---1-11---2-12---3-13---4-14---5-15---X
 func FlatMap[T any, R any](input *Channel[T], mapper func(T) *Channel[R], options ...FlatMapOptions) *Channel[R] {
 	opts := getOptions(FlatMapOptions{Concurrency: 1}, options)
 	worker := func(node workerNode[T, R]) {
@@ -94,9 +92,8 @@ type BatchOptions struct {
 //
 //  output := Batch(input, BatchOptions{Size: 3})
 //
-// input : 0--1----2----------3------4--5----------6--7----X
-//
-// output: --------{1-2-3}--------------{3-4-5}-------{6-7}X
+//  input : 0--1----2----------3------4--5----------6--7----X
+//  output: --------{1-2-3}--------------{3-4-5}-------{6-7}X
 func Batch[T any](input *Channel[T], options ...BatchOptions) *Channel[[]T] {
 	opts := getOptions(BatchOptions{}, options)
 	nextTimeout := func() <-chan time.Time {

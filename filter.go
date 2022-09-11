@@ -6,9 +6,8 @@ package jpipe
 //
 //  output := input.Filter(func(i int) bool { return i%2==1 })
 //
-// input : 0--1--2--3--4--5-X
-//
-// output: ---1-----3-----5-X
+//  input : 0--1--2--3--4--5-X
+//  output: ---1-----3-----5-X
 func (input *Channel[T]) Filter(predicate func(T) bool) *Channel[T] {
 	worker := func(node workerNode[T, T]) {
 		node.LoopInput(0, func(value T) bool {
@@ -29,9 +28,8 @@ func (input *Channel[T]) Filter(predicate func(T) bool) *Channel[T] {
 //
 //  output := input.Skip(2)
 //
-// input : 0--1--2--3--4--5-X
-//
-// output: ------2--3-----5-X
+//  input : 0--1--2--3--4--5-X
+//  output: ------2--3-----5-X
 func (input *Channel[T]) Skip(n uint64) *Channel[T] {
 	worker := func(node workerNode[T, T]) {
 		i := uint64(0)
@@ -54,9 +52,8 @@ func (input *Channel[T]) Skip(n uint64) *Channel[T] {
 //
 //  output := input.Take(3)
 //
-// input : 0--1--2--3--4--5-X
-//
-// output: 0--1--2-X
+//  input : 0--1--2--3--4--5-X
+//  output: 0--1--2-X
 func (input *Channel[T]) Take(n uint64) *Channel[T] {
 	worker := func(node workerNode[T, T]) {
 		i := uint64(0)
@@ -81,9 +78,8 @@ func (input *Channel[T]) Take(n uint64) *Channel[T] {
 //
 //  output := Distinct(input, func(value int) int { return value })
 //
-// input : 0--1--2--1--3--2-X
-//
-// output: 0--1--2-----3----X
+//  input : 0--1--2--1--3--2-X
+//  output: 0--1--2-----3----X
 func Distinct[T any, K comparable](input *Channel[T], getKey func(T) K) *Channel[T] {
 	worker := func(node workerNode[T, T]) {
 		seen := map[any]bool{}

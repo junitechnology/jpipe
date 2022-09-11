@@ -37,9 +37,8 @@ func (input *Channel[T]) Tap(function func(T)) *Channel[T] {
 //
 //  output := input.Interval(4*time.Millisecond)
 //
-// input : 0--1--2--------------3--4--5--X
-//
-// output: 0----1----2----------3----4----5-X
+//  input : 0--1--2--------------3--4--5--X
+//  output: 0----1----2----------3----4----5-X
 func (input *Channel[T]) Interval(interval func(value T) time.Duration) *Channel[T] {
 	worker := func(node workerNode[T, T]) {
 		timeout := time.After(0)
@@ -76,11 +75,9 @@ type BroadcastOptions struct {
 //
 //  outputs := input.Broadcast(4*time.Millisecond)
 //
-// input  : 0--1--2--3--4--5---X
-//
-// output1: 0--1--2--3--4--5---X
-//
-// output2: -0--1--2--3--4--5--X
+//  input  : 0--1--2--3--4--5---X
+//  output1: 0--1--2--3--4--5---X
+//  output2: -0--1--2--3--4--5--X
 func (input *Channel[T]) Broadcast(numOutputs int, options ...BroadcastOptions) []*Channel[T] {
 	opts := getOptions(BroadcastOptions{}, options)
 	worker := func(node workerNode[T, T]) {
