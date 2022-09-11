@@ -138,7 +138,7 @@ func TestToMap(t *testing.T) {
 		pipeline := jpipe.New(context.TODO())
 		channel := jpipe.FromSlice(pipeline, []int{11, 42, 31, 22, 73})
 
-		actual := <-jpipe.ToMap(channel, func(i int) int { return i % 10 }, jpipe.ToMapOptions{Keep: jpipe.KEEP_FIRST})
+		actual := <-jpipe.ToMap(channel, func(i int) int { return i % 10 }, options.ToMapOptions{Keep: options.KEEP_FIRST})
 
 		assert.Equal(t, map[int]int{1: 11, 2: 42, 3: 73}, actual)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
@@ -148,7 +148,7 @@ func TestToMap(t *testing.T) {
 		pipeline := jpipe.New(context.TODO())
 		channel := jpipe.FromSlice(pipeline, []int{11, 42, 31, 22, 73})
 
-		actual := <-jpipe.ToMap(channel, func(i int) int { return i % 10 }, jpipe.ToMapOptions{Keep: jpipe.KEEP_LAST})
+		actual := <-jpipe.ToMap(channel, func(i int) int { return i % 10 }, options.ToMapOptions{Keep: options.KEEP_LAST})
 
 		assert.Equal(t, map[int]int{1: 31, 2: 22, 3: 73}, actual)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
