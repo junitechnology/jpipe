@@ -7,7 +7,7 @@ import (
 // Merge merges multiple input channels to a single output channel. Values from input
 // channels are sent to the output channels as they arrive, with no specific priority.
 //
-// # Example:
+// ## Example:
 //
 //  output := Merge(input1, input2)
 //
@@ -38,7 +38,7 @@ func Merge[T any](inputs ...*Channel[T]) *Channel[T] {
 // Channels are consumed in order, e.g., the second channel won't be consumed
 // until the first channel is closed.
 //
-// # Example:
+// ## Example:
 //
 //  output := Concat(input1, input2)
 //

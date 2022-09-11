@@ -37,7 +37,7 @@ func (input *Channel[T]) Tap(function func(T)) *Channel[T] {
 // No value is sent to the output while that interval is active.
 // This operator is prone to generating backpressure, so use it with care, and consider adding a Buffer before it.
 //
-// # Example(assume each hyphen is 1 ms):
+// ## Example(assume each hyphen is 1 ms):
 //
 //  output := input.Interval(4*time.Millisecond)
 //
@@ -71,7 +71,7 @@ func (input *Channel[T]) Interval(interval func(value T) time.Duration) *Channel
 // This is a particularly annoying type of backpressure, cause not only does it block the input, it also blocks other consumers.
 // To avoid this, consider using BroadcastOptions.BufferSize and the output channels will be buffered, with no need for an extra Buffer operator.
 //
-// # Example (assume each hyphen is 1 ms):
+// ## Example (assume each hyphen is 1 ms):
 //
 //  outputs := input.Broadcast(4*time.Millisecond)
 //
