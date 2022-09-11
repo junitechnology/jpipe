@@ -34,7 +34,7 @@ func (input *Channel[T]) ForEach(function func(T), opts ...options.ForEachOption
 // The reducer receives the current state and the current value, and must return the new state.
 // The final state is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
 //
-// ## Example. Calculating the sum of all input values:
+// Example. Calculating the sum of all input values:
 //
 //  output := Reduce(input, func(acc int64, value int) int64 { return acc + int64(value) })
 //
@@ -59,7 +59,7 @@ func Reduce[T any, R any](input *Channel[T], reducer func(R, T) R, opts ...optio
 // ToSlice puts all values coming from the input channel in a slice.
 // The resulting slice is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
 //
-// ## Example:
+// Example:
 //
 //  output := input.ToSlice()
 //
@@ -83,7 +83,7 @@ func (input *Channel[T]) ToSlice() <-chan []T {
 // ToMap puts all values coming from the input channel in a map, using the getKey parameter to calculate the key.
 // The resulting map is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
 //
-// ## Example:
+// Example:
 //
 //  output := ToMap(input, func(value string) string { return strings.Split(value, "_")[0] })
 //
@@ -114,7 +114,7 @@ func ToMap[T any, K comparable](input *Channel[T], getKey func(T) K, opts ...opt
 // ToGoChannel sends all values from the input channel to the returned Go channel.
 // The returned Go channel closes when all input values have been processed, or the pipeline is canceled.
 //
-// ## Example:
+// Example:
 //
 //  output := input.ToGoChannel()
 //
@@ -146,7 +146,7 @@ func (input *Channel[T]) ToGoChannel() <-chan T {
 // Last gets the last value received from the input channel.
 // The last value is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
 //
-// ## Example:
+// Example:
 //
 //  output := input.Last()
 //
@@ -178,7 +178,7 @@ func (input *Channel[T]) Last() <-chan T {
 // Count counts input values.
 // The final count is sent to the return channel when all input values have been processed, or the pipeline is canceled.
 //
-// ## Example:
+// Example:
 //
 //  output := input.ToGoChannel()
 //
@@ -203,14 +203,14 @@ func (input *Channel[T]) Count() <-chan int64 {
 // If no value matches the predicate, false is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
 // If instead some value is found to match the predicate, true is immediately sent to the returned channel and no more input values are read.
 //
-// ## Example 1:
+// Example 1:
 //
 //  output := input.Any(func(value int) bool { return value > 3 })
 //
 //  input : 0--1--2--3--X
 //  output: ------------false
 //
-// ## Example 2:
+// Example 2:
 //
 //  output := input.Any(func(value int) bool { return value >= 2 })
 //
@@ -235,14 +235,14 @@ func (input *Channel[T]) Any(predicate func(T) bool) <-chan bool {
 // If all values match the predicate, true is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
 // If instead some value does not match the predicate, false is immediately sent to the returned channel and no more input values are read.
 //
-// ## Example 1:
+// Example 1:
 //
 //  output := input.All(func(value int) bool { return value < 4 })
 //
 //  input : 0--1--2--3--X
 //  output: ------------true
 //
-// ## Example 2:
+// Example 2:
 //
 //  output := input.Any(func(value int) bool { return value < 2 })
 //
@@ -267,14 +267,14 @@ func (input *Channel[T]) All(predicate func(T) bool) <-chan bool {
 // If no value matches the predicate, true is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
 // If instead some value matches the predicate, false is immediately sent to the returned channel and no more input values are read.
 //
-// ## Example 1:
+// Example 1:
 //
 //  output := input.None(func(value int) bool { return value > 3 })
 //
 //  input : 0--1--2--3--X
 //  output: ------------true
 //
-// ## Example 2:
+// Example 2:
 //
 //  output := input.None(func(value int) bool { return value >= 2 })
 //

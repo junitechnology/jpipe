@@ -9,7 +9,7 @@ import (
 
 // Map transforms every input value with a mapper function and sends the results to the output channel.
 //
-// ## Example:
+// Example:
 //
 //  output := Map(input, func(i int) int { return i + 10 })
 //
@@ -37,7 +37,7 @@ func Map[T any, R any](input *Channel[T], mapper func(T) R, opts ...options.MapO
 
 // Map transforms every input value into a Channel and for each of those, it sends all values to the output channel.
 //
-// ## Example:
+// Example:
 //
 //  output := FlatMap(input, func(i int) *Channel[int] { return FromSlice([]int{i, i + 10}) })
 //
@@ -75,7 +75,7 @@ func FlatMap[T any, R any](input *Channel[T], mapper func(T) *Channel[R], opts .
 // Batches can be limited by size with BatchOptions.Size and by time with BatchOptions.Timeout.
 // It's possible to use size-only, time-only or size-and-time strategies.
 //
-// ## Example:
+// Example:
 //
 //  output := Batch(input, BatchOptions{Size: 3})
 //
