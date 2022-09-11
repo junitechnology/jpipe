@@ -13,7 +13,8 @@ type MapOptions struct {
 // Map transforms every input value with a mapper function and sends the results to the output channel.
 //
 // Example:
-//  Map(input, func(i int) int { return i + 10 })
+//
+//  output := Map(input, func(i int) int { return i + 10 })
 //
 // input : 0--1--2--3--4--5--X
 //
@@ -46,7 +47,8 @@ type FlatMapOptions struct {
 // Map transforms every input value into a Channel and for each of those, it sends all values to the output channel.
 //
 // Example:
-//  FlatMap(input, func(i int) *Channel[int] { return FromSlice([]int{i, i + 10}) })
+//
+//  output := FlatMap(input, func(i int) *Channel[int] { return FromSlice([]int{i, i + 10}) })
 //
 // input : 0------1------2------3------4------5------X
 //
@@ -88,7 +90,9 @@ type BatchOptions struct {
 // Batches can be limited by size with BatchOptions.Size and by time with BatchOptions.Timeout.
 // It's possible to use size-only, time-only or size-and-time strategies.
 //
-// Example with BatchOptions{Size:3}:
+// Example:
+//
+//  output := Batch(input, BatchOptions{Size: 3})
 //
 // input : 0--1----2----------3------4--5----------6--7----X
 //

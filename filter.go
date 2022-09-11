@@ -3,7 +3,8 @@ package jpipe
 // Filter sends to the output channel only the input values that satisfy the predicate.
 //
 // Example:
-//  input.Filter(func(i int) bool { return i%2==1 })
+//
+//  output := input.Filter(func(i int) bool { return i%2==1 })
 //
 // input : 0--1--2--3--4--5-X
 //
@@ -24,7 +25,9 @@ func (input *Channel[T]) Filter(predicate func(T) bool) *Channel[T] {
 
 // Skip skips the first n input values, and then starts sending values from n+1 on to the output channel
 //
-// Example with n = 2
+// Example:
+//
+//  output := input.Skip(2)
 //
 // input : 0--1--2--3--4--5-X
 //
@@ -47,7 +50,9 @@ func (input *Channel[T]) Skip(n uint64) *Channel[T] {
 
 // Take sends the first n input values to the output channel, and then stops processing and closes the output channel.
 //
-// Example with n = 3
+// Example:
+//
+//  output := input.Take(3)
 //
 // input : 0--1--2--3--4--5-X
 //
@@ -71,6 +76,10 @@ func (input *Channel[T]) Take(n uint64) *Channel[T] {
 // Distinct sends only input values it hasn't seen before to the output channel.
 // It uses an internal map to keep track of all values seen,
 // so keep in mind that it could exhaust memory if too many distinct values are received.
+//
+// Example:
+//
+//  output := Distinct(input, func(value int) int { return value })
 //
 // input : 0--1--2--1--3--2-X
 //

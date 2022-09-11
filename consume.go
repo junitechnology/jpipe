@@ -9,8 +9,8 @@ type ForEachOptions struct {
 }
 
 // ForEach calls the function passed as parameter for every value coming from the input channel.
-// It returns a channel that will close when all input values have been processed.
-func (channel *Channel[T]) ForEach(function func(T), options ...ForEachOptions) <-chan struct{} {
+// The returned channel will close when all input values have been processed, or the pipeline is canceled.
+func (input *Channel[T]) ForEach(function func(T), options ...ForEachOptions) <-chan struct{} {
 	opts := getOptions(ForEachOptions{Concurrency: 1}, options)
 	worker := func(node workerNode[T, any]) {
 		var wg sync.WaitGroup
@@ -28,7 +28,7 @@ func (channel *Channel[T]) ForEach(function func(T), options ...ForEachOptions) 
 		wg.Wait()
 	}
 
-	node := newSinkPipelineNode("ForEach", channel, worker)
+	node := newSinkPipelineNode("ForEach", input, worker)
 	return node.Done()
 }
 
@@ -38,12 +38,16 @@ type ReduceOptions[R any] struct {
 
 // Reduce performs a stateful reduction of the input values.
 // The reducer receives the current state and the current value, and must return the new state.
-// The returned channel will return the final state when all input values have been processed.
+// The final state is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
 //
 // Example. Calculating the sum of all input values:
 //
-//   Reduce(input, func(acc int64, value int) int64 { return acc + int64(value) })
-func Reduce[T any, R any](channel *Channel[T], reducer func(R, T) R, options ...ReduceOptions[R]) <-chan R {
+//  output := Reduce(input, func(acc int64, value int) int64 { return acc + int64(value) })
+//
+// input : 0--1--2--3--X
+//
+// output: ------------6
+func Reduce[T any, R any](input *Channel[T], reducer func(R, T) R, options ...ReduceOptions[R]) <-chan R {
 	opts := getOptions(ReduceOptions[R]{}, options)
 	resultChannel := make(chan R, 1)
 	worker := func(node workerNode[T, any]) {
@@ -55,13 +59,21 @@ func Reduce[T any, R any](channel *Channel[T], reducer func(R, T) R, options ...
 		})
 	}
 
-	newSinkPipelineNode("Reduce", channel, worker)
+	newSinkPipelineNode("Reduce", input, worker)
 	return resultChannel
 }
 
 // ToSlice puts all values coming from the input channel in a slice.
-// It returns a channel that will return the slice when all input values have been processed.
-func (channel *Channel[T]) ToSlice() <-chan []T {
+// The resulting slice is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
+//
+// Example:
+//
+//  output := input.ToSlice()
+//
+// input : 0--1--2--3--X
+//
+// output: ------------{0,1,2,3}
+func (input *Channel[T]) ToSlice() <-chan []T {
 	resultChannel := make(chan []T, 1)
 	worker := func(node workerNode[T, any]) {
 		slice := []T{}
@@ -72,7 +84,7 @@ func (channel *Channel[T]) ToSlice() <-chan []T {
 		})
 	}
 
-	newSinkPipelineNode("ToSlice", channel, worker)
+	newSinkPipelineNode("ToSlice", input, worker)
 	return resultChannel
 }
 
@@ -81,8 +93,16 @@ type ToMapOptions struct {
 }
 
 // ToMap puts all values coming from the input channel in a map, using the getKey parameter to calculate the key.
-// It returns a channel that will return the map when all input values have been processed.
-func ToMap[T any, K comparable](channel *Channel[T], getKey func(T) K, options ...ToMapOptions) <-chan map[K]T {
+// The resulting map is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
+//
+// Example:
+//
+// output := ToMap(input, func(value string) string { return strings.Split(value, "_")[0] })
+//
+// input : A_0--B_1--C_2--X
+//
+// output: ---------------{A:A_0, B:B_1, C:C_2}
+func ToMap[T any, K comparable](input *Channel[T], getKey func(T) K, options ...ToMapOptions) <-chan map[K]T {
 	opts := getOptions(ToMapOptions{Keep: KEEP_FIRST}, options)
 	resultChannel := make(chan map[K]T, 1)
 	worker := func(node workerNode[T, any]) {
@@ -100,13 +120,21 @@ func ToMap[T any, K comparable](channel *Channel[T], getKey func(T) K, options .
 		})
 	}
 
-	newSinkPipelineNode("ToMap", channel, worker)
+	newSinkPipelineNode("ToMap", input, worker)
 	return resultChannel
 }
 
 // ToGoChannel sends all values from the input channel to the returned Go channel.
-// The returned Go channel closes when all input values have been processed.
-func (channel *Channel[T]) ToGoChannel() <-chan T {
+// The returned Go channel closes when all input values have been processed, or the pipeline is canceled.
+//
+// Example:
+//
+//  output := input.ToGoChannel()
+//
+// input : 0--1--2--3--X
+//
+// output: 0--1--2--3--X
+func (input *Channel[T]) ToGoChannel() <-chan T {
 	goChannel := make(chan T)
 	worker := func(node workerNode[T, any]) {
 		defer close(goChannel)
@@ -125,12 +153,21 @@ func (channel *Channel[T]) ToGoChannel() <-chan T {
 		})
 	}
 
-	newSinkPipelineNode("ToGoChannel", channel, worker)
+	newSinkPipelineNode("ToGoChannel", input, worker)
 	return goChannel
 }
 
-// Last returns a channel that will return the last input value received, immediately after the input channel has been closed.
-func (channel *Channel[T]) Last() <-chan T {
+// Last gets the last value received from the input channel.
+// The last value is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
+//
+// Example:
+//
+//  output := input.Last()
+//
+// input : 0--1--2--3------X
+//
+// output: ----------------3
+func (input *Channel[T]) Last() <-chan T {
 	resultChannel := make(chan T, 1)
 	worker := func(node workerNode[T, any]) {
 		var lastValue T
@@ -149,14 +186,21 @@ func (channel *Channel[T]) Last() <-chan T {
 		})
 	}
 
-	newSinkPipelineNode("Last", channel, worker)
+	newSinkPipelineNode("Last", input, worker)
 	return resultChannel
 }
 
-// Count counts input elements.
-// The final count is sent to the return channel when all input values are red, or the pipeline is canceled.
+// Count counts input values.
+// The final count is sent to the return channel when all input values have been processed, or the pipeline is canceled.
 //
-func (channel *Channel[T]) Count() <-chan int64 {
+// Example:
+//
+//  output := input.ToGoChannel()
+//
+// input : 9--8--7--6--X
+//
+// output: ------------4
+func (input *Channel[T]) Count() <-chan int64 {
 	resultChannel := make(chan int64, 1)
 	worker := func(node workerNode[T, any]) {
 		count := int64(0)
@@ -167,13 +211,30 @@ func (channel *Channel[T]) Count() <-chan int64 {
 		})
 	}
 
-	newSinkPipelineNode("Count", channel, worker)
+	newSinkPipelineNode("Count", input, worker)
 	return resultChannel
 }
 
-// Any returns a channel that will return true as soon as an input value satisfies the predicate.
-// The channel will return false if all input values were processed and no one satisfied the predicate.
-func (channel *Channel[T]) Any(predicate func(T) bool) <-chan bool {
+// Any determines if any value matches the predicate.
+// If no value matches the predicate, false is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
+// If instead some value is found to match the predicate, true is immediately sent to the returned channel and no more input values are read.
+//
+// Example 1:
+//
+//  output := input.Any(func(value int) bool { return value > 3 })
+//
+// input : 0--1--2--3--X
+//
+// output: ------------false
+//
+// Example 2:
+//
+//  output := input.Any(func(value int) bool { return value >= 2 })
+//
+// input : 0--1--2--3--X
+//
+// output: ------true
+func (input *Channel[T]) Any(predicate func(T) bool) <-chan bool {
 	resultChannel := make(chan bool)
 	worker := func(node workerNode[T, any]) {
 		result := false
@@ -184,13 +245,30 @@ func (channel *Channel[T]) Any(predicate func(T) bool) <-chan bool {
 		})
 	}
 
-	newSinkPipelineNode("Any", channel, worker)
+	newSinkPipelineNode("Any", input, worker)
 	return resultChannel
 }
 
-// All returns a channel that will return false as soon as an input value does not satisfy the predicate.
-// The channel will return true if all input values were processed and they all satisfied the predicate.
-func (channel *Channel[T]) All(predicate func(T) bool) <-chan bool {
+// All determines if all values match the predicate.
+// If all values match the predicate, true is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
+// If instead some value does not match the predicate, false is immediately sent to the returned channel and no more input values are read.
+//
+// Example 1:
+//
+//  output := input.All(func(value int) bool { return value < 4 })
+//
+// input : 0--1--2--3--X
+//
+// output: ------------true
+//
+// Example 2:
+//
+//  output := input.Any(func(value int) bool { return value < 2 })
+//
+// input : 0--1--2--3--X
+//
+// output: ------false
+func (input *Channel[T]) All(predicate func(T) bool) <-chan bool {
 	resultChannel := make(chan bool)
 	worker := func(node workerNode[T, any]) {
 		result := true
@@ -201,13 +279,30 @@ func (channel *Channel[T]) All(predicate func(T) bool) <-chan bool {
 		})
 	}
 
-	newSinkPipelineNode("All", channel, worker)
+	newSinkPipelineNode("All", input, worker)
 	return resultChannel
 }
 
-// None returns a channel that will return false as soon as an input value satisfies the predicate.
-// The channel will return true if all input values were processed and no one satisfied the predicate.
-func (channel *Channel[T]) None(predicate func(T) bool) <-chan bool {
+// None determines if no value matches the predicate.
+// If no value matches the predicate, true is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
+// If instead some value matches the predicate, false is immediately sent to the returned channel and no more input values are read.
+//
+// Example 1:
+//
+//  output := input.None(func(value int) bool { return value > 3 })
+//
+// input : 0--1--2--3--X
+//
+// output: ------------true
+//
+// Example 2:
+//
+//  output := input.None(func(value int) bool { return value >= 2 })
+//
+// input : 0--1--2--3--X
+//
+// output: ------false
+func (input *Channel[T]) None(predicate func(T) bool) <-chan bool {
 	resultChannel := make(chan bool)
 	worker := func(node workerNode[T, any]) {
 		result := true
@@ -218,6 +313,6 @@ func (channel *Channel[T]) None(predicate func(T) bool) <-chan bool {
 		})
 	}
 
-	newSinkPipelineNode("None", channel, worker)
+	newSinkPipelineNode("None", input, worker)
 	return resultChannel
 }
