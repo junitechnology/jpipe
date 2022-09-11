@@ -79,14 +79,14 @@ func (input *Channel[T]) Interval(interval func(value T) time.Duration) *Channel
 //  output1: 0--1--2--3--4--5---X
 //  output2: -0--1--2--3--4--5--X
 func (input *Channel[T]) Broadcast(numOutputs int, opts ...options.BroadcastOptions) []*Channel[T] {
-	opt := getOptions(options.BroadcastOptions{}, opts)
+	buffered := getOptions(opts, Buffered(0))
 	worker := func(node workerNode[T, T]) {
 		node.LoopInput(0, func(value T) bool {
 			return node.Send(value)
 		})
 	}
 
-	_, outputs := newPipelineNode("Broadcast", input.getPipeline(), []*Channel[T]{input}, numOutputs, opt.BufferSize, worker)
+	_, outputs := newPipelineNode("Broadcast", input.getPipeline(), []*Channel[T]{input}, numOutputs, buffered.Size, worker)
 	return outputs
 }
 

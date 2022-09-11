@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/junitechnology/jpipe"
-	"github.com/junitechnology/jpipe/options"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/slices"
 )
@@ -54,7 +53,7 @@ func TestForEach(t *testing.T) {
 			lock.Lock()
 			values = append(values, value)
 			lock.Unlock()
-		}, options.ForEachOptions{Concurrency: 5})
+		}, jpipe.Concurrent(5))
 		elapsed := time.Since(start)
 
 		slices.Sort(values) // The output order with concurrency is unpredictable
@@ -138,7 +137,7 @@ func TestToMap(t *testing.T) {
 		pipeline := jpipe.New(context.TODO())
 		channel := jpipe.FromSlice(pipeline, []int{11, 42, 31, 22, 73})
 
-		actual := <-jpipe.ToMap(channel, func(i int) int { return i % 10 }, options.ToMapOptions{Keep: options.KEEP_FIRST})
+		actual := <-jpipe.ToMap(channel, func(i int) int { return i % 10 }, jpipe.KeepFirst())
 
 		assert.Equal(t, map[int]int{1: 11, 2: 42, 3: 73}, actual)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
@@ -148,7 +147,7 @@ func TestToMap(t *testing.T) {
 		pipeline := jpipe.New(context.TODO())
 		channel := jpipe.FromSlice(pipeline, []int{11, 42, 31, 22, 73})
 
-		actual := <-jpipe.ToMap(channel, func(i int) int { return i % 10 }, options.ToMapOptions{Keep: options.KEEP_LAST})
+		actual := <-jpipe.ToMap(channel, func(i int) int { return i % 10 }, jpipe.KeepLast())
 
 		assert.Equal(t, map[int]int{1: 31, 2: 22, 3: 73}, actual)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
