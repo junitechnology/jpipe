@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/junitechnology/jpipe"
+	"github.com/junitechnology/jpipe/options"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/slices"
 )
@@ -43,7 +44,7 @@ func TestMap(t *testing.T) {
 		mappedChannel := jpipe.Map(channel, func(i int) string {
 			time.Sleep(10 * time.Millisecond)
 			return fmt.Sprintf("%dA", i)
-		}, jpipe.MapOptions{Concurrency: 3})
+		}, options.MapOptions{Concurrency: 3})
 
 		mappedValues := drainChannel(mappedChannel)
 		elapsed := time.Since(start)
@@ -91,7 +92,7 @@ func TestFlatMap(t *testing.T) {
 		mappedChannel := jpipe.FlatMap(channel, func(i int) *jpipe.Channel[string] {
 			time.Sleep(10 * time.Millisecond)
 			return jpipe.FromSlice(pipeline, []string{fmt.Sprintf("%dA", i), fmt.Sprintf("%dB", i)})
-		}, jpipe.FlatMapOptions{Concurrency: 3})
+		}, options.FlatMapOptions{Concurrency: 3})
 
 		mappedValues := drainChannel(mappedChannel)
 		elapsed := time.Since(start)
@@ -107,7 +108,7 @@ func TestBatch(t *testing.T) {
 	t.Run("Batches values based on size only", func(t *testing.T) {
 		pipeline := jpipe.New(context.TODO())
 		channel := jpipe.FromSlice(pipeline, []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
-		batchedChannel := jpipe.Batch(channel, jpipe.BatchOptions{Size: 3})
+		batchedChannel := jpipe.Batch(channel, options.BatchOptions{Size: 3})
 
 		batchedValues := drainChannel(batchedChannel)
 
@@ -119,7 +120,7 @@ func TestBatch(t *testing.T) {
 		pipeline := jpipe.New(context.TODO())
 		sourceGoChannel := make(chan int)
 		channel := jpipe.FromGoChannel(pipeline, sourceGoChannel)
-		batchedChannel := jpipe.Batch(channel, jpipe.BatchOptions{Timeout: 100 * time.Millisecond})
+		batchedChannel := jpipe.Batch(channel, options.BatchOptions{Timeout: 100 * time.Millisecond})
 
 		time.AfterFunc(0, func() { sourceGoChannel <- 1 })
 		time.AfterFunc(40*time.Millisecond, func() { sourceGoChannel <- 2 })
@@ -137,7 +138,7 @@ func TestBatch(t *testing.T) {
 		pipeline := jpipe.New(context.TODO())
 		sourceGoChannel := make(chan int)
 		channel := jpipe.FromGoChannel(pipeline, sourceGoChannel)
-		batchedChannel := jpipe.Batch(channel, jpipe.BatchOptions{Size: 2, Timeout: 100 * time.Millisecond})
+		batchedChannel := jpipe.Batch(channel, options.BatchOptions{Size: 2, Timeout: 100 * time.Millisecond})
 
 		time.AfterFunc(0, func() { sourceGoChannel <- 1 })
 		time.AfterFunc(40*time.Millisecond, func() { sourceGoChannel <- 2 })
@@ -154,7 +155,7 @@ func TestBatch(t *testing.T) {
 		pipeline := jpipe.New(context.TODO())
 		sourceGoChannel := make(chan int, 5)
 		channel := jpipe.FromGoChannel(pipeline, sourceGoChannel)
-		batchedChannel := jpipe.Batch(channel, jpipe.BatchOptions{Size: 2, Timeout: 100 * time.Millisecond})
+		batchedChannel := jpipe.Batch(channel, options.BatchOptions{Size: 2, Timeout: 100 * time.Millisecond})
 
 		time.AfterFunc(0, func() { sourceGoChannel <- 1 })
 		time.AfterFunc(40*time.Millisecond, func() { sourceGoChannel <- 2 })

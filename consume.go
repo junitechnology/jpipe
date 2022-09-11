@@ -2,20 +2,18 @@ package jpipe
 
 import (
 	"sync"
-)
 
-type ForEachOptions struct {
-	Concurrency int
-}
+	"github.com/junitechnology/jpipe/options"
+)
 
 // ForEach calls the function passed as parameter for every value coming from the input channel.
 // The returned channel will close when all input values have been processed, or the pipeline is canceled.
-func (input *Channel[T]) ForEach(function func(T), options ...ForEachOptions) <-chan struct{} {
-	opts := getOptions(ForEachOptions{Concurrency: 1}, options)
+func (input *Channel[T]) ForEach(function func(T), opts ...options.ForEachOptions) <-chan struct{} {
+	opt := getOptions(options.ForEachOptions{Concurrency: 1}, opts)
 	worker := func(node workerNode[T, any]) {
 		var wg sync.WaitGroup
 
-		for i := 0; i < opts.Concurrency; i++ {
+		for i := 0; i < opt.Concurrency; i++ {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
