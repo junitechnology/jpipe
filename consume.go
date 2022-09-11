@@ -44,9 +44,8 @@ type ReduceOptions[R any] struct {
 //
 //  output := Reduce(input, func(acc int64, value int) int64 { return acc + int64(value) })
 //
-// input : 0--1--2--3--X
-//
-// output: ------------6
+//  input : 0--1--2--3--X
+//  output: ------------6
 func Reduce[T any, R any](input *Channel[T], reducer func(R, T) R, options ...ReduceOptions[R]) <-chan R {
 	opts := getOptions(ReduceOptions[R]{}, options)
 	resultChannel := make(chan R, 1)
@@ -70,9 +69,8 @@ func Reduce[T any, R any](input *Channel[T], reducer func(R, T) R, options ...Re
 //
 //  output := input.ToSlice()
 //
-// input : 0--1--2--3--X
-//
-// output: ------------{0,1,2,3}
+//  input : 0--1--2--3--X
+//  output: ------------{0,1,2,3}
 func (input *Channel[T]) ToSlice() <-chan []T {
 	resultChannel := make(chan []T, 1)
 	worker := func(node workerNode[T, any]) {
@@ -97,11 +95,10 @@ type ToMapOptions struct {
 //
 // Example:
 //
-// output := ToMap(input, func(value string) string { return strings.Split(value, "_")[0] })
+//  output := ToMap(input, func(value string) string { return strings.Split(value, "_")[0] })
 //
-// input : A_0--B_1--C_2--X
-//
-// output: ---------------{A:A_0, B:B_1, C:C_2}
+//  input : A_0--B_1--C_2--X
+//  output: ---------------{A:A_0, B:B_1, C:C_2}
 func ToMap[T any, K comparable](input *Channel[T], getKey func(T) K, options ...ToMapOptions) <-chan map[K]T {
 	opts := getOptions(ToMapOptions{Keep: KEEP_FIRST}, options)
 	resultChannel := make(chan map[K]T, 1)
@@ -131,9 +128,8 @@ func ToMap[T any, K comparable](input *Channel[T], getKey func(T) K, options ...
 //
 //  output := input.ToGoChannel()
 //
-// input : 0--1--2--3--X
-//
-// output: 0--1--2--3--X
+//  input : 0--1--2--3--X
+//  output: 0--1--2--3--X
 func (input *Channel[T]) ToGoChannel() <-chan T {
 	goChannel := make(chan T)
 	worker := func(node workerNode[T, any]) {
@@ -164,9 +160,8 @@ func (input *Channel[T]) ToGoChannel() <-chan T {
 //
 //  output := input.Last()
 //
-// input : 0--1--2--3------X
-//
-// output: ----------------3
+//  input : 0--1--2--3------X
+//  output: ----------------3
 func (input *Channel[T]) Last() <-chan T {
 	resultChannel := make(chan T, 1)
 	worker := func(node workerNode[T, any]) {
@@ -197,9 +192,8 @@ func (input *Channel[T]) Last() <-chan T {
 //
 //  output := input.ToGoChannel()
 //
-// input : 9--8--7--6--X
-//
-// output: ------------4
+//  input : 9--8--7--6--X
+//  output: ------------4
 func (input *Channel[T]) Count() <-chan int64 {
 	resultChannel := make(chan int64, 1)
 	worker := func(node workerNode[T, any]) {
@@ -223,17 +217,15 @@ func (input *Channel[T]) Count() <-chan int64 {
 //
 //  output := input.Any(func(value int) bool { return value > 3 })
 //
-// input : 0--1--2--3--X
-//
-// output: ------------false
+//  input : 0--1--2--3--X
+//  output: ------------false
 //
 // Example 2:
 //
 //  output := input.Any(func(value int) bool { return value >= 2 })
 //
-// input : 0--1--2--3--X
-//
-// output: ------true
+//  input : 0--1--2--3--X
+//  output: ------true
 func (input *Channel[T]) Any(predicate func(T) bool) <-chan bool {
 	resultChannel := make(chan bool)
 	worker := func(node workerNode[T, any]) {
@@ -257,17 +249,15 @@ func (input *Channel[T]) Any(predicate func(T) bool) <-chan bool {
 //
 //  output := input.All(func(value int) bool { return value < 4 })
 //
-// input : 0--1--2--3--X
-//
-// output: ------------true
+//  input : 0--1--2--3--X
+//  output: ------------true
 //
 // Example 2:
 //
 //  output := input.Any(func(value int) bool { return value < 2 })
 //
-// input : 0--1--2--3--X
-//
-// output: ------false
+//  input : 0--1--2--3--X
+//  output: ------false
 func (input *Channel[T]) All(predicate func(T) bool) <-chan bool {
 	resultChannel := make(chan bool)
 	worker := func(node workerNode[T, any]) {
@@ -291,17 +281,15 @@ func (input *Channel[T]) All(predicate func(T) bool) <-chan bool {
 //
 //  output := input.None(func(value int) bool { return value > 3 })
 //
-// input : 0--1--2--3--X
-//
-// output: ------------true
+//  input : 0--1--2--3--X
+//  output: ------------true
 //
 // Example 2:
 //
 //  output := input.None(func(value int) bool { return value >= 2 })
 //
-// input : 0--1--2--3--X
-//
-// output: ------false
+//  input : 0--1--2--3--X
+//  output: ------false
 func (input *Channel[T]) None(predicate func(T) bool) <-chan bool {
 	resultChannel := make(chan bool)
 	worker := func(node workerNode[T, any]) {

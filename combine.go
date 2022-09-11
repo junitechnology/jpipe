@@ -11,11 +11,9 @@ import (
 //
 //  output := Merge(input1, input2)
 //
-// input1: 0----1----2------3-X
-//
-// input2: -----5------6------X
-//
-// output: 0----5-1--2-6----3-X
+//  input1: 0----1----2------3-X
+//  input2: -----5------6------X
+//  output: 0----5-1--2-6----3-X
 func Merge[T any](inputs ...*Channel[T]) *Channel[T] {
 	worker := func(node workerNode[T, T]) {
 		var wg sync.WaitGroup
@@ -44,11 +42,9 @@ func Merge[T any](inputs ...*Channel[T]) *Channel[T] {
 //
 //  output := Concat(input1, input2)
 //
-// input 1: 0----1----2------3-X
-//
-// input 2: -----5------6--------------7--X
-//
-// output : 0----1----2------3-5-6-----7--X
+//  input 1: 0----1----2------3-X
+//  input 2: -----5------6--------------7--X
+//  output : 0----1----2------3-5-6-----7--X
 func Concat[T any](inputs ...*Channel[T]) *Channel[T] {
 	worker := func(node workerNode[T, T]) {
 		for i := range inputs {
