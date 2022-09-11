@@ -10,10 +10,3 @@ type Item[T any] struct {
 	Error error
 	Ctx   context.Context
 }
-
-func getOptions[T any](defaultOptions T, options []T) T {
-	if len(options) > 0 {
-		return options[0]
-	}
-	return defaultOptions
-}

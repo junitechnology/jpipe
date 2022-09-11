@@ -1,41 +1,25 @@
 package options
 
-import "time"
-
-type ForEachOptions struct {
+type Concurrent struct {
 	Concurrency int
 }
 
-type MapOptions struct {
-	Concurrency int
-	//Ordered bool
+func (c Concurrent) supportsForEach() {}
+func (c Concurrent) supportsMap()     {}
+func (c Concurrent) supportsFlatMap() {}
+
+type Ordered struct {
+	OrderBufferSize int
 }
 
-type FlatMapOptions struct {
-	Concurrency int
-	//Ordered bool
+type Buffered struct {
+	Size int
 }
 
-type BatchOptions struct {
-	Size    int
-	Timeout time.Duration
+func (b Buffered) supportsBroadcast() {}
+
+type Keep struct {
+	Strategy KeepStrategy
 }
 
-type BroadcastOptions struct {
-	BufferSize int
-}
-
-type ToMapOptions struct {
-	Keep KeepStrategy
-}
-
-type ReduceOptions[R any] struct {
-	InitialState R
-}
-
-type KeepStrategy string
-
-const (
-	KEEP_FIRST KeepStrategy = "KEEP_FIRST"
-	KEEP_LAST  KeepStrategy = "KEEP_LAST"
-)
+func (b Keep) supportsToMap() {}

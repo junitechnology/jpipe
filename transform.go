@@ -16,10 +16,10 @@ import (
 //  input : 0--1--2--3--4--5--X
 //  output: 10-11-12-13-14-15-X
 func Map[T any, R any](input *Channel[T], mapper func(T) R, opts ...options.MapOptions) *Channel[R] {
-	opt := getOptions(options.MapOptions{Concurrency: 1}, opts)
+	concurrent := getOptions(opts, Concurrent(1))
 	worker := func(node workerNode[T, R]) {
 		var wg sync.WaitGroup
-		for i := 0; i < opt.Concurrency; i++ {
+		for i := 0; i < concurrent.Concurrency; i++ {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
@@ -44,10 +44,10 @@ func Map[T any, R any](input *Channel[T], mapper func(T) R, opts ...options.MapO
 //  input : 0------1------2------3------4------5------X
 //  output: 0-10---1-11---2-12---3-13---4-14---5-15---X
 func FlatMap[T any, R any](input *Channel[T], mapper func(T) *Channel[R], opts ...options.FlatMapOptions) *Channel[R] {
-	opt := getOptions(options.FlatMapOptions{Concurrency: 1}, opts)
+	concurrent := getOptions(opts, Concurrent(1))
 	worker := func(node workerNode[T, R]) {
 		var wg sync.WaitGroup
-		for i := 0; i < opt.Concurrency; i++ {
+		for i := 0; i < concurrent.Concurrency; i++ {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
@@ -81,11 +81,10 @@ func FlatMap[T any, R any](input *Channel[T], mapper func(T) *Channel[R], opts .
 //
 //  input : 0--1----2----------3------4--5----------6--7----X
 //  output: --------{1-2-3}--------------{3-4-5}-------{6-7}X
-func Batch[T any](input *Channel[T], opts ...options.BatchOptions) *Channel[[]T] {
-	opt := getOptions(options.BatchOptions{}, opts)
+func Batch[T any](input *Channel[T], size int, timeout time.Duration) *Channel[[]T] {
 	nextTimeout := func() <-chan time.Time {
-		if opt.Timeout > 0 {
-			return time.After(opt.Timeout)
+		if timeout > 0 {
+			return time.After(timeout)
 		}
 		return make(<-chan time.Time)
 	}
@@ -111,7 +110,7 @@ func Batch[T any](input *Channel[T], opts ...options.BatchOptions) *Channel[[]T]
 						break
 					}
 					batch = append(batch, value)
-					if len(batch) == opt.Size {
+					if len(batch) == size {
 						flush = true
 					}
 				case <-timeout:

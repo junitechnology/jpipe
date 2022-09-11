@@ -9,11 +9,11 @@ import (
 // ForEach calls the function passed as parameter for every value coming from the input channel.
 // The returned channel will close when all input values have been processed, or the pipeline is canceled.
 func (input *Channel[T]) ForEach(function func(T), opts ...options.ForEachOptions) <-chan struct{} {
-	opt := getOptions(options.ForEachOptions{Concurrency: 1}, opts)
+	concurrent := getOptions(opts, Concurrent(1))
 	worker := func(node workerNode[T, any]) {
 		var wg sync.WaitGroup
 
-		for i := 0; i < opt.Concurrency; i++ {
+		for i := 0; i < concurrent.Concurrency; i++ {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
@@ -40,11 +40,10 @@ func (input *Channel[T]) ForEach(function func(T), opts ...options.ForEachOption
 //
 //  input : 0--1--2--3--X
 //  output: ------------6
-func Reduce[T any, R any](input *Channel[T], reducer func(R, T) R, opts ...options.ReduceOptions[R]) <-chan R {
-	opt := getOptions(options.ReduceOptions[R]{}, opts)
+func Reduce[T any, R any](input *Channel[T], reducer func(R, T) R) <-chan R {
 	resultChannel := make(chan R, 1)
 	worker := func(node workerNode[T, any]) {
-		var state R = opt.InitialState
+		var state R
 		defer func() { resultChannel <- state }()
 		node.LoopInput(0, func(value T) bool {
 			state = reducer(state, value)
@@ -90,14 +89,14 @@ func (input *Channel[T]) ToSlice() <-chan []T {
 //  input : A_0--B_1--C_2--X
 //  output: ---------------{A:A_0, B:B_1, C:C_2}
 func ToMap[T any, K comparable](input *Channel[T], getKey func(T) K, opts ...options.ToMapOptions) <-chan map[K]T {
-	opt := getOptions(options.ToMapOptions{Keep: options.KEEP_FIRST}, opts)
+	keep := getOptions(opts, KeepFirst())
 	resultChannel := make(chan map[K]T, 1)
 	worker := func(node workerNode[T, any]) {
 		resultMap := map[K]T{}
 		defer func() { resultChannel <- resultMap }()
 		node.LoopInput(0, func(value T) bool {
 			key := getKey(value)
-			if opt.Keep == options.KEEP_FIRST {
+			if keep.Strategy == options.KEEP_FIRST {
 				if _, ok := resultMap[key]; ok {
 					return true
 				}
