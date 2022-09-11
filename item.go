@@ -1,12 +1,23 @@
 package jpipe
 
-import "context"
+import (
+	"context"
 
-// An Item is a utility type to use in pipelines.
-// It can have a Value or an Error, so it provides an easy way to propagate per-value(possibily recoverable) errors.
-// It also carries a context that can be enriched along the pipeline.
-type Item[T any] struct {
-	Value T
-	Error error
-	Ctx   context.Context
+	"github.com/junitechnology/jpipe/item"
+)
+
+func Item[T any](value T, err error, ctx context.Context) item.Item[T] {
+	return item.Item[T]{
+		Value: value,
+		Error: err,
+		Ctx:   ctx,
+	}
+}
+
+func ValueItem[T any](value T) item.Item[T] {
+	return item.Item[T]{Value: value}
+}
+
+func ErrorItem[T any](err error) item.Item[T] {
+	return item.Item[T]{Error: err}
 }

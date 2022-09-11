@@ -3,6 +3,7 @@ package jpipe
 import (
 	"time"
 
+	"github.com/junitechnology/jpipe/item"
 	"github.com/junitechnology/jpipe/options"
 )
 
@@ -93,10 +94,10 @@ func (input *Channel[T]) Broadcast(numOutputs int, opts ...options.BroadcastOpti
 // Wrap wraps every input value T in an Item[T] and sends it to the output channel.
 // Item[T] is used mostly to represent items that can have either a value or an error.
 // Another use for Item[T] is using the Context in it and enrich it in successive operators.
-func Wrap[T any](input *Channel[T]) *Channel[Item[T]] {
-	worker := func(node workerNode[T, Item[T]]) {
+func Wrap[T any](input *Channel[T]) *Channel[item.Item[T]] {
+	worker := func(node workerNode[T, item.Item[T]]) {
 		node.LoopInput(0, func(value T) bool {
-			return node.Send(Item[T]{Value: value})
+			return node.Send(item.Item[T]{Value: value})
 		})
 	}
 

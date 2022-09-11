@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/junitechnology/jpipe"
+	"github.com/junitechnology/jpipe/item"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -175,7 +176,7 @@ func TestWrap(t *testing.T) {
 
 		values := drainChannel(wrappedChannel)
 
-		assert.Equal(t, []jpipe.Item[int]{{Value: 1}, {Value: 2}, {Value: 3}}, values)
+		assert.Equal(t, []item.Item[int]{{Value: 1}, {Value: 2}, {Value: 3}}, values)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 
