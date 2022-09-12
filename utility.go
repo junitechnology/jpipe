@@ -74,7 +74,7 @@ func (input *Channel[T]) Interval(interval func(value T) time.Duration) *Channel
 //
 // Example (assume each hyphen is 1 ms):
 //
-//  outputs := input.Broadcast(4*time.Millisecond)
+//  outputs := input.Broadcast(2, Buffered(4*time.Millisecond))
 //
 //  input  : 0--1--2--3--4--5---X
 //  output1: 0--1--2--3--4--5---X

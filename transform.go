@@ -72,12 +72,12 @@ func FlatMap[T any, R any](input *Channel[T], mapper func(T) *Channel[R], opts .
 }
 
 // Batch batches input values in slices and sends those slices to the output channel
-// Batches can be limited by size with BatchOptions.Size and by time with BatchOptions.Timeout.
-// It's possible to use size-only, time-only or size-and-time strategies.
+// Batches can be limited by size and by time.
+// Size/time are ignored if they are 0
 //
 // Example:
 //
-//  output := Batch(input, BatchOptions{Size: 3})
+//  output := Batch(input, 3, 0)
 //
 //  input : 0--1----2----------3------4--5----------6--7----X
 //  output: --------{1-2-3}--------------{3-4-5}-------{6-7}X
