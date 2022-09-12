@@ -1,6 +1,6 @@
 package jpipe
 
-// Filter sends to the output channel only the input values that satisfy the predicate.
+// Filter sends to the output channel only the input values that match the predicate.
 //
 // Example:
 //
