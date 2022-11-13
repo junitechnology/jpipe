@@ -57,6 +57,7 @@ func Reduce[T any, R any](input *Channel[T], reducer func(R, T) R) <-chan R {
 
 // ToSlice puts all values coming from the input channel in a slice.
 // The resulting slice is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
+// The slice may have partial results if the pipeline failed, so you must remember to check the pipeline's Error() method.
 //
 // Example:
 //
@@ -142,7 +143,7 @@ func (input *Channel[T]) ToGoChannel() <-chan T {
 	return goChannel
 }
 
-// Last gets the last value received from the input channel.
+// Last sends the last value received from the input channel to the output channel.
 // The last value is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
 //
 // Example:
@@ -174,7 +175,7 @@ func (input *Channel[T]) Last() <-chan T {
 	return resultChannel
 }
 
-// Count counts input values.
+// Count counts input values and sends the final count to the output channel.
 // The final count is sent to the return channel when all input values have been processed, or the pipeline is canceled.
 //
 // Example:
@@ -198,7 +199,7 @@ func (input *Channel[T]) Count() <-chan int64 {
 	return resultChannel
 }
 
-// Any determines if any value matches the predicate.
+// Any determines if any input value matches the predicate.
 // If no value matches the predicate, false is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
 // If instead some value is found to match the predicate, true is immediately sent to the returned channel and no more input values are read.
 //
@@ -230,7 +231,7 @@ func (input *Channel[T]) Any(predicate func(T) bool) <-chan bool {
 	return resultChannel
 }
 
-// All determines if all values match the predicate.
+// All determines if all input values match the predicate.
 // If all values match the predicate, true is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
 // If instead some value does not match the predicate, false is immediately sent to the returned channel and no more input values are read.
 //
@@ -243,7 +244,7 @@ func (input *Channel[T]) Any(predicate func(T) bool) <-chan bool {
 //
 // Example 2:
 //
-//  output := input.Any(func(value int) bool { return value < 2 })
+//  output := input.All(func(value int) bool { return value < 2 })
 //
 //  input : 0--1--2--3--X
 //  output: ------false
@@ -262,7 +263,7 @@ func (input *Channel[T]) All(predicate func(T) bool) <-chan bool {
 	return resultChannel
 }
 
-// None determines if no value matches the predicate.
+// None determines if no input value matches the predicate.
 // If no value matches the predicate, true is sent to the returned channel when all input values have been processed, or the pipeline is canceled.
 // If instead some value matches the predicate, false is immediately sent to the returned channel and no more input values are read.
 //

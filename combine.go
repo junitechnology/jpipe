@@ -5,7 +5,7 @@ import (
 )
 
 // Merge merges multiple input channels to a single output channel. Values from input
-// channels are sent to the output channels as they arrive, with no specific priority.
+// channels are sent to the output channel as they arrive, with no specific priority.
 //
 // Example:
 //

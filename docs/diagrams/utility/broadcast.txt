@@ -1,0 +1,8 @@
+-1-2-3-|
+title = input
+
+-1-2-3-|
+title = outputs[0]
+
+-1-2-3-|
+title = outputs[1]

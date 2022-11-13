@@ -70,8 +70,8 @@ func (input *Channel[T]) Take(n uint64) *Channel[T] {
 	return output
 }
 
-// Distinct sends only input values it hasn't seen before to the output channel.
-// It uses an internal map to keep track of all values seen,
+// Distinct sends only input values for which the key hasn't been seen before to the output channel.
+// It uses an internal map to keep track of all keys seen,
 // so keep in mind that it could exhaust memory if too many distinct values are received.
 //
 // Example:

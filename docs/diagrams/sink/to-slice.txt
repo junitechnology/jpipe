@@ -1,0 +1,9 @@
+[styles]
+event_radius = 30
+
+-1--2--3-|
+title = input
+
+---------a
+a := {1,2,3}
+title = output

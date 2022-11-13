@@ -4,6 +4,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/junitechnology/jpipe/item"
 	"github.com/junitechnology/jpipe/options"
 )
 
@@ -35,7 +36,7 @@ func Map[T any, R any](input *Channel[T], mapper func(T) R, opts ...options.MapO
 	return output
 }
 
-// Map transforms every input value into a Channel and for each of those, it sends all values to the output channel.
+// FlatMap transforms every input value into a Channel and for each of those, it sends all values to the output channel.
 //
 // Example:
 //
@@ -132,5 +133,19 @@ func Batch[T any](input *Channel[T], size int, timeout time.Duration) *Channel[[
 	}
 
 	_, output := newLinearPipelineNode("Batch", input, 0, worker)
+	return output
+}
+
+// Wrap wraps every input value T in an Item[T] and sends it to the output channel.
+// Item[T] is used mostly to represent items that can have either a value or an error.
+// Another use for Item[T] is using the Context in it and enrich it in successive operators.
+func Wrap[T any](input *Channel[T]) *Channel[item.Item[T]] {
+	worker := func(node workerNode[T, item.Item[T]]) {
+		node.LoopInput(0, func(value T) bool {
+			return node.Send(item.Item[T]{Value: value})
+		})
+	}
+
+	_, output := newLinearPipelineNode("Wrap", input, 0, worker)
 	return output
 }

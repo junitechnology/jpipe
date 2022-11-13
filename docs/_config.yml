@@ -1,0 +1,12 @@
+title: JPipe
+description: Pipeline pattern for Go
+theme: just-the-docs
+
+markdown: kramdown
+kramdown:
+  parse_block_html: true
+
+mermaid:
+  version: "9.2.2"
+
+url: https://jpipe.junitechnology.github.io

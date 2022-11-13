@@ -1,0 +1,5 @@
+-1-2-3-|
+title = Go channel
+
+-1-2-3-|
+title = channel

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/junitechnology/jpipe"
+	"github.com/junitechnology/jpipe/item"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/slices"
 )
@@ -165,6 +166,32 @@ func TestBatch(t *testing.T) {
 		batchedValues := drainChannel(batchedChannel)
 
 		assert.Equal(t, [][]int{{1, 2}, {3}}, batchedValues)
+		assertPipelineDone(t, pipeline, 10*time.Millisecond)
+	})
+}
+
+func TestWrap(t *testing.T) {
+	t.Run("Filters values", func(t *testing.T) {
+		pipeline := jpipe.New(context.TODO())
+		channel := jpipe.FromSlice(pipeline, []int{1, 2, 3})
+		wrappedChannel := jpipe.Wrap(channel)
+
+		values := drainChannel(wrappedChannel)
+
+		assert.Equal(t, []item.Item[int]{{Value: 1}, {Value: 2}, {Value: 3}}, values)
+		assertPipelineDone(t, pipeline, 10*time.Millisecond)
+	})
+
+	t.Run("Exits early if pipeline canceled", func(t *testing.T) {
+		pipeline := jpipe.New(context.TODO())
+		channel := jpipe.FromSlice(pipeline, []int{1, 2, 3})
+		wrappedChannel := jpipe.Wrap(channel)
+		goChannel := wrappedChannel.ToGoChannel()
+
+		readGoChannel(goChannel, 2)
+		cancelPipeline(pipeline)
+
+		assertChannelClosed(t, goChannel)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 }
