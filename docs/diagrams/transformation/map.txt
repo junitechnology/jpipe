@@ -1,0 +1,9 @@
+-1-2-3-4-|
+title = input
+
+-a-b-c-d-|
+a := 10
+b := 20
+c := 30
+d := 40
+title = output

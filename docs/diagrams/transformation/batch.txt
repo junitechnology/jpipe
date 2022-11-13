@@ -1,0 +1,11 @@
+[styles]
+event_radius = 27
+
+-1-2--3--4---5-6--7-8-|
+title = input
+
+------a--------b------c|
+a := {1,2,3}
+b := {4,5,6}
+c := {7,8}
+title = output

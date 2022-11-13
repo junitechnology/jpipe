@@ -1,0 +1,11 @@
+[styles]
+event_radius = 60
+
+-1----2----3----|
+title = input
+
+-a----b----c----|
+a := Item{Value: 1}
+b := Item{Value: 2}
+c := Item{Value: 3}
+title = output
