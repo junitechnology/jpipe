@@ -74,7 +74,7 @@ Now let's see how the same thing is done with JPipe:
 
 ```go
 ids := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-pipeline := jpipe.NewPipeline(jpipe.Config{Context: ctx})
+pipeline := jpipe.New(ctx)
 <-jpipe.FromSlice(pipeline, ids).
     ForEach(expensiveIOOperation, jpipe.Concurrent(5))
 ```
