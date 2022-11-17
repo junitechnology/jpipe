@@ -44,29 +44,3 @@ time.After(5*time.Minute, pipeline.Start())
 Notice how in the snippet above, if we had used `jpipe.New(ctx)`, the pipeline would have executed immediately, instead of after 5 minutes.
 
 This whole concept of prepared pipelines can be better seen as the pipeline just being a blueprint of the actual processing. The pipeline defines data generation/flow/transformation, but actual execution is a separate step.
-
-<h3>Multi-sink pipelines</h3>
-
-Pipelines with multiple sinks are a good use case for manual starting. Let's see one such pipeline with automatic start:
-
-```go
-pipeline := jpipe.New(ctx)
-channels := jpipe.FromRange(pipeline, 1, 1000).
-    Broadcast(2, jpipe.Buffered(20))
-<-channel[0].ForEach(func(id int) { callAPI1(id) }, jpipe.Concurrent(10))
-// do other stuff
-<-channel[1].ForEach(func(id int) { callAPI2(id) }, jpipe.Concurrent(3))
-```
-
-Broadcast is a more complex operator, so let's visualize the above pipeline:
-
-```mermaid
-graph LR;
-    A[FromRange]-->B[Broadcast];
-    B-->C["ForEach(callAPI1)"];
-    B-->D["ForEach(callAPI2)"];
-```
-
-Why would one resort to this complexity, instead of using a single `ForEach`(without `Broadcast`) and calling both APIs sequentially? A reason can be that you want to execute both APIs with different concurrency, maybe because each API has specific concurrency rate limits. That's why in this example, the first `ForEach` uses `jpipe.Concurrent(10)` and the second one uses `jpipe.Concurrent(3)`.
-
-Back to the auto-start subject, you can see how in this example the pipeline would start after the first `ForEach` is created. So there's no way in a pipeline like this to make the full pipeline start at the same time. This may not be an issue in many cases, but such control may be desired. Notice the `// do other stuff` comment between both `ForEach`s. That may be some long operation that is must be run before creating the second `ForEach`. If automatic start was used, the second `ForEach` may start working significantly after the first one.
