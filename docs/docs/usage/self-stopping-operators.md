@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Self-stopping Operators
-nav_order: 4
+nav_order: 5
 parent: Usage
 ---
 

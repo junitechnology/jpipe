@@ -28,6 +28,7 @@ Imagine this operation must be run for ids 1 through 10. We don't want to wait 1
 
 <details>
 <summary markdown="span">Plain Go version</summary>
+
 ```go
 ids := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 channel := make(chan int)
@@ -37,29 +38,26 @@ for i := 0; i < concurrency; i++ {
     wg.Add(1)
     go func() {
         defer wg.Done()
-        for {
-            select {
-                // The nested select gives priority to the ctx.Done() signal, so we always exit early if needed
-                // Without it, a single select just has no priority, so a new value could be processed even if the context has been canceled
-                case <-ctx.Done():
-                return
-            default:
-                select {
-                case id, open := <-channel:
-                    if !open {
-                        return
-                    }
-                    expensiveIOOperation(id)
-                case <-ctx.Done(): // always check ctx.Done() to avoid leaking the goroutine
-                    return
-                }
-            }
+        for value := range channel {
+            expensiveIOOperation(id)
         }
+        defer wg.Done()
     }()
 }
 
 for _, id := range ids {
-    channel <- id
+    select {
+    // The nested select gives priority to the ctx.Done() signal, so we always exit early if needed
+    // Without it, a single select just has no priority, so a new value could be processed even if the context has been canceled
+    case <-ctx.Done():
+        break
+    default:
+        select {
+        case channel <- id:
+        case <-ctx.Done(): // always check ctx.Done() to avoid leaking the goroutine
+            break
+        }
+    }
 }
 close(channel)
 
