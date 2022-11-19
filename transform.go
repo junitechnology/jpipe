@@ -1,7 +1,6 @@
 package jpipe
 
 import (
-	"sync"
 	"time"
 
 	"github.com/junitechnology/jpipe/item"
@@ -19,20 +18,12 @@ import (
 func Map[T any, R any](input *Channel[T], mapper func(T) R, opts ...options.MapOptions) *Channel[R] {
 	concurrent := getOptions(opts, Concurrent(1))
 	worker := func(node workerNode[T, R]) {
-		var wg sync.WaitGroup
-		for i := 0; i < concurrent.Concurrency; i++ {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				node.LoopInput(0, func(value T) bool {
-					return node.Send(mapper(value))
-				})
-			}()
-		}
-		wg.Wait()
+		node.LoopInput(0, func(value T) bool {
+			return node.Send(mapper(value))
+		})
 	}
 
-	_, output := newLinearPipelineNode("Map", input, 0, worker)
+	_, output := newLinearPipelineNode("Map", input, 0, worker, concurrent.Concurrency)
 	return output
 }
 
@@ -47,28 +38,20 @@ func Map[T any, R any](input *Channel[T], mapper func(T) R, opts ...options.MapO
 func FlatMap[T any, R any](input *Channel[T], mapper func(T) *Channel[R], opts ...options.FlatMapOptions) *Channel[R] {
 	concurrent := getOptions(opts, Concurrent(1))
 	worker := func(node workerNode[T, R]) {
-		var wg sync.WaitGroup
-		for i := 0; i < concurrent.Concurrency; i++ {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				node.LoopInput(0, func(value T) bool {
-					mappedChannel := mapper(value)
-					loopOverChannel(node, mappedChannel.getChannel(), func(outputValue R) bool {
-						if !node.Send(outputValue) {
-							mappedChannel.unsubscribe()
-							return false
-						}
-						return true
-					})
-					return true
-				})
-			}()
-		}
-		wg.Wait()
+		node.LoopInput(0, func(value T) bool {
+			mappedChannel := mapper(value)
+			loopOverChannel(node, mappedChannel.getChannel(), func(outputValue R) bool {
+				if !node.Send(outputValue) {
+					mappedChannel.unsubscribe()
+					return false
+				}
+				return true
+			})
+			return true
+		})
 	}
 
-	_, output := newLinearPipelineNode("FlatMap", input, 0, worker)
+	_, output := newLinearPipelineNode("FlatMap", input, 0, worker, concurrent.Concurrency)
 	return output
 }
 
@@ -132,7 +115,7 @@ func Batch[T any](input *Channel[T], size int, timeout time.Duration) *Channel[[
 		}
 	}
 
-	_, output := newLinearPipelineNode("Batch", input, 0, worker)
+	_, output := newLinearPipelineNode("Batch", input, 0, worker, 1)
 	return output
 }
 
@@ -146,6 +129,6 @@ func Wrap[T any](input *Channel[T]) *Channel[item.Item[T]] {
 		})
 	}
 
-	_, output := newLinearPipelineNode("Wrap", input, 0, worker)
+	_, output := newLinearPipelineNode("Wrap", input, 0, worker, 1)
 	return output
 }

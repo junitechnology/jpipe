@@ -1,8 +1,6 @@
 package jpipe
 
 import (
-	"sync"
-
 	"github.com/junitechnology/jpipe/options"
 )
 
@@ -11,22 +9,13 @@ import (
 func (input *Channel[T]) ForEach(function func(T), opts ...options.ForEachOptions) <-chan struct{} {
 	concurrent := getOptions(opts, Concurrent(1))
 	worker := func(node workerNode[T, any]) {
-		var wg sync.WaitGroup
-
-		for i := 0; i < concurrent.Concurrency; i++ {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				node.LoopInput(0, func(value T) bool {
-					function(value)
-					return true
-				})
-			}()
-		}
-		wg.Wait()
+		node.LoopInput(0, func(value T) bool {
+			function(value)
+			return true
+		})
 	}
 
-	node := newSinkPipelineNode("ForEach", input, worker)
+	node := newSinkPipelineNode("ForEach", input, worker, concurrent.Concurrency)
 	return node.Done()
 }
 
@@ -51,7 +40,7 @@ func Reduce[T any, R any](input *Channel[T], reducer func(R, T) R) <-chan R {
 		})
 	}
 
-	newSinkPipelineNode("Reduce", input, worker)
+	newSinkPipelineNode("Reduce", input, worker, 1)
 	return resultChannel
 }
 
@@ -76,7 +65,7 @@ func (input *Channel[T]) ToSlice() <-chan []T {
 		})
 	}
 
-	newSinkPipelineNode("ToSlice", input, worker)
+	newSinkPipelineNode("ToSlice", input, worker, 1)
 	return resultChannel
 }
 
@@ -107,7 +96,7 @@ func ToMap[T any, K comparable](input *Channel[T], getKey func(T) K, opts ...opt
 		})
 	}
 
-	newSinkPipelineNode("ToMap", input, worker)
+	newSinkPipelineNode("ToMap", input, worker, 1)
 	return resultChannel
 }
 
@@ -139,7 +128,7 @@ func (input *Channel[T]) ToGoChannel() <-chan T {
 		})
 	}
 
-	newSinkPipelineNode("ToGoChannel", input, worker)
+	newSinkPipelineNode("ToGoChannel", input, worker, 1)
 	return goChannel
 }
 
@@ -171,7 +160,7 @@ func (input *Channel[T]) Last() <-chan T {
 		})
 	}
 
-	newSinkPipelineNode("Last", input, worker)
+	newSinkPipelineNode("Last", input, worker, 1)
 	return resultChannel
 }
 
@@ -195,7 +184,7 @@ func (input *Channel[T]) Count() <-chan int64 {
 		})
 	}
 
-	newSinkPipelineNode("Count", input, worker)
+	newSinkPipelineNode("Count", input, worker, 1)
 	return resultChannel
 }
 
@@ -227,7 +216,7 @@ func (input *Channel[T]) Any(predicate func(T) bool) <-chan bool {
 		})
 	}
 
-	newSinkPipelineNode("Any", input, worker)
+	newSinkPipelineNode("Any", input, worker, 1)
 	return resultChannel
 }
 
@@ -259,7 +248,7 @@ func (input *Channel[T]) All(predicate func(T) bool) <-chan bool {
 		})
 	}
 
-	newSinkPipelineNode("All", input, worker)
+	newSinkPipelineNode("All", input, worker, 1)
 	return resultChannel
 }
 
@@ -291,6 +280,6 @@ func (input *Channel[T]) None(predicate func(T) bool) <-chan bool {
 		})
 	}
 
-	newSinkPipelineNode("None", input, worker)
+	newSinkPipelineNode("None", input, worker, 1)
 	return resultChannel
 }

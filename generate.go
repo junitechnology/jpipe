@@ -12,7 +12,7 @@ func FromGoChannel[T any](pipeline *Pipeline, channel <-chan T) *Channel[T] {
 		})
 	}
 
-	_, output := newSourcePipelineNode("FromGoChannel", pipeline, 0, worker)
+	_, output := newSourcePipelineNode("FromGoChannel", pipeline, 0, worker, 1)
 	return output
 }
 
@@ -27,7 +27,7 @@ func FromSlice[T any](pipeline *Pipeline, slice []T) *Channel[T] {
 		}
 	}
 
-	_, output := newSourcePipelineNode("FromSlice", pipeline, 0, worker)
+	_, output := newSourcePipelineNode("FromSlice", pipeline, 0, worker, 1)
 	return output
 }
 
@@ -42,7 +42,7 @@ func FromRange[T constraints.Integer](pipeline *Pipeline, start T, end T) *Chann
 		}
 	}
 
-	_, output := newSourcePipelineNode("FromRange", pipeline, 0, worker)
+	_, output := newSourcePipelineNode("FromRange", pipeline, 0, worker, 1)
 	return output
 }
 
@@ -57,6 +57,6 @@ func FromGenerator[T any](pipeline *Pipeline, generator func(i uint64) T) *Chann
 		}
 	}
 
-	_, output := newSourcePipelineNode("FromGenerator", pipeline, 0, worker)
+	_, output := newSourcePipelineNode("FromGenerator", pipeline, 0, worker, 1)
 	return output
 }
