@@ -15,7 +15,7 @@ func (input *Channel[T]) Buffer(n int) *Channel[T] {
 		})
 	}
 
-	_, output := newLinearPipelineNode("Buffer", input, n, worker, 1)
+	_, output := newLinearPipelineNode("Buffer", input, worker, Buffered(n))
 	return output
 }
 
@@ -29,7 +29,7 @@ func (input *Channel[T]) Tap(function func(T)) *Channel[T] {
 		})
 	}
 
-	_, output := newLinearPipelineNode("Tap", input, 0, worker, 1)
+	_, output := newLinearPipelineNode("Tap", input, worker)
 	return output
 }
 
@@ -61,7 +61,7 @@ func (input *Channel[T]) Interval(interval func(value T) time.Duration) *Channel
 		})
 	}
 
-	_, output := newLinearPipelineNode("Interval", input, 0, worker, 1)
+	_, output := newLinearPipelineNode("Interval", input, worker)
 	return output
 }
 
@@ -79,13 +79,12 @@ func (input *Channel[T]) Interval(interval func(value T) time.Duration) *Channel
 //  output1: 0--1--2--3--4--5---X
 //  output2: 0--1--2--3--4--5---X
 func (input *Channel[T]) Broadcast(numOutputs int, opts ...options.BroadcastOptions) []*Channel[T] {
-	buffered := getOptions(opts, Buffered(0))
 	worker := func(node workerNode[T, T]) {
 		node.LoopInput(0, func(value T) bool {
 			return node.Send(value)
 		})
 	}
 
-	_, outputs := newPipelineNode("Broadcast", input.getPipeline(), []*Channel[T]{input}, numOutputs, buffered.Size, worker, 1)
+	_, outputs := newPipelineNode("Broadcast", input.getPipeline(), []*Channel[T]{input}, numOutputs, worker, getNodeOptions(opts)...)
 	return outputs
 }

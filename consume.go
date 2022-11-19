@@ -7,7 +7,6 @@ import (
 // ForEach calls the function passed as parameter for every value coming from the input channel.
 // The returned channel will close when all input values have been processed, or the pipeline is canceled.
 func (input *Channel[T]) ForEach(function func(T), opts ...options.ForEachOptions) <-chan struct{} {
-	concurrent := getOptions(opts, Concurrent(1))
 	worker := func(node workerNode[T, any]) {
 		node.LoopInput(0, func(value T) bool {
 			function(value)
@@ -15,7 +14,7 @@ func (input *Channel[T]) ForEach(function func(T), opts ...options.ForEachOption
 		})
 	}
 
-	node := newSinkPipelineNode("ForEach", input, worker, concurrent.Concurrency)
+	node := newSinkPipelineNode("ForEach", input, worker, getNodeOptions(opts)...)
 	return node.Done()
 }
 
@@ -40,7 +39,7 @@ func Reduce[T any, R any](input *Channel[T], reducer func(R, T) R) <-chan R {
 		})
 	}
 
-	newSinkPipelineNode("Reduce", input, worker, 1)
+	newSinkPipelineNode("Reduce", input, worker)
 	return resultChannel
 }
 
@@ -65,7 +64,7 @@ func (input *Channel[T]) ToSlice() <-chan []T {
 		})
 	}
 
-	newSinkPipelineNode("ToSlice", input, worker, 1)
+	newSinkPipelineNode("ToSlice", input, worker)
 	return resultChannel
 }
 
@@ -96,7 +95,7 @@ func ToMap[T any, K comparable](input *Channel[T], getKey func(T) K, opts ...opt
 		})
 	}
 
-	newSinkPipelineNode("ToMap", input, worker, 1)
+	newSinkPipelineNode("ToMap", input, worker, getNodeOptions(opts)...)
 	return resultChannel
 }
 
@@ -128,7 +127,7 @@ func (input *Channel[T]) ToGoChannel() <-chan T {
 		})
 	}
 
-	newSinkPipelineNode("ToGoChannel", input, worker, 1)
+	newSinkPipelineNode("ToGoChannel", input, worker)
 	return goChannel
 }
 
@@ -160,7 +159,7 @@ func (input *Channel[T]) Last() <-chan T {
 		})
 	}
 
-	newSinkPipelineNode("Last", input, worker, 1)
+	newSinkPipelineNode("Last", input, worker)
 	return resultChannel
 }
 
@@ -184,7 +183,7 @@ func (input *Channel[T]) Count() <-chan int64 {
 		})
 	}
 
-	newSinkPipelineNode("Count", input, worker, 1)
+	newSinkPipelineNode("Count", input, worker)
 	return resultChannel
 }
 
@@ -216,7 +215,7 @@ func (input *Channel[T]) Any(predicate func(T) bool) <-chan bool {
 		})
 	}
 
-	newSinkPipelineNode("Any", input, worker, 1)
+	newSinkPipelineNode("Any", input, worker)
 	return resultChannel
 }
 
@@ -248,7 +247,7 @@ func (input *Channel[T]) All(predicate func(T) bool) <-chan bool {
 		})
 	}
 
-	newSinkPipelineNode("All", input, worker, 1)
+	newSinkPipelineNode("All", input, worker)
 	return resultChannel
 }
 
@@ -280,6 +279,6 @@ func (input *Channel[T]) None(predicate func(T) bool) <-chan bool {
 		})
 	}
 
-	newSinkPipelineNode("None", input, worker, 1)
+	newSinkPipelineNode("None", input, worker)
 	return resultChannel
 }

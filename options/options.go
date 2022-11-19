@@ -4,6 +4,7 @@ type Concurrent struct {
 	Concurrency int
 }
 
+func (c Concurrent) supportsNode()    {}
 func (c Concurrent) supportsForEach() {}
 func (c Concurrent) supportsMap()     {}
 func (c Concurrent) supportsFlatMap() {}
@@ -16,6 +17,7 @@ type Buffered struct {
 	Size int
 }
 
+func (b Buffered) supportsNode()      {}
 func (b Buffered) supportsBroadcast() {}
 
 type Keep struct {

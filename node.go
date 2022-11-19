@@ -3,6 +3,8 @@ package jpipe
 import (
 	"fmt"
 	"sync"
+
+	"github.com/junitechnology/jpipe/options"
 )
 
 type pipelineNode interface {
@@ -43,9 +45,11 @@ func newPipelineNode[T any, R any](
 	pipeline *Pipeline,
 	inputs []*Channel[T],
 	numOutputs int,
-	outputChannelSize int,
 	worker func(workerNode[T, R]),
-	concurrency int) (pipelineNode, []*Channel[R]) {
+	opts ...options.NodeOptions) (pipelineNode, []*Channel[R]) {
+
+	concurrent := getOptions(opts, Concurrent(1))
+	buffered := getOptions(opts, Buffered(0))
 
 	node := &node[T, R]{
 		nodeType:        nodeType,
@@ -58,7 +62,7 @@ func newPipelineNode[T any, R any](
 		worker:          worker,
 		quitSignal:      make(chan struct{}),
 		doneSignal:      make(chan struct{}),
-		concurrency:     concurrency,
+		concurrency:     concurrent.Concurrency,
 	}
 
 	for _, input := range inputs {
@@ -66,7 +70,7 @@ func newPipelineNode[T any, R any](
 	}
 
 	for i := 0; i < numOutputs; i++ {
-		goChannel := make(chan R, outputChannelSize)
+		goChannel := make(chan R, buffered.Size)
 		n := i // avoid capturing the loop var i in the unsubscriber closure
 		node.outputs[i] = newChannel(pipeline, goChannel, func() { node.unsubscribe(n) })
 		node.outputWriters[i] = goChannel
@@ -78,18 +82,18 @@ func newPipelineNode[T any, R any](
 	return node, node.outputs
 }
 
-func newLinearPipelineNode[T any, R any](nodeType string, input *Channel[T], outputChannelSize int, worker func(workerNode[T, R]), concurrency int) (pipelineNode, *Channel[R]) {
-	node, outputs := newPipelineNode(nodeType, input.getPipeline(), []*Channel[T]{input}, 1, outputChannelSize, worker, concurrency)
+func newLinearPipelineNode[T any, R any](nodeType string, input *Channel[T], worker func(workerNode[T, R]), opts ...options.NodeOptions) (pipelineNode, *Channel[R]) {
+	node, outputs := newPipelineNode(nodeType, input.getPipeline(), []*Channel[T]{input}, 1, worker, opts...)
 	return node, outputs[0]
 }
 
-func newSourcePipelineNode[R any](nodeType string, pipeline *Pipeline, outputChannelSize int, worker func(workerNode[any, R]), concurrency int) (pipelineNode, *Channel[R]) {
-	node, outputs := newPipelineNode(nodeType, pipeline, []*Channel[any]{}, 1, outputChannelSize, worker, concurrency)
+func newSourcePipelineNode[R any](nodeType string, pipeline *Pipeline, worker func(workerNode[any, R]), opts ...options.NodeOptions) (pipelineNode, *Channel[R]) {
+	node, outputs := newPipelineNode(nodeType, pipeline, []*Channel[any]{}, 1, worker, opts...)
 	return node, outputs[0]
 }
 
-func newSinkPipelineNode[T any](nodeType string, input *Channel[T], worker func(workerNode[T, any]), concurrency int) pipelineNode {
-	node, _ := newPipelineNode(nodeType, input.getPipeline(), []*Channel[T]{input}, 0, 0, worker, concurrency)
+func newSinkPipelineNode[T any](nodeType string, input *Channel[T], worker func(workerNode[T, any]), opts ...options.NodeOptions) pipelineNode {
+	node, _ := newPipelineNode(nodeType, input.getPipeline(), []*Channel[T]{input}, 0, worker, opts...)
 	return node
 }
 

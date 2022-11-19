@@ -18,13 +18,23 @@ func KeepLast() options.Keep {
 	return options.Keep{Strategy: options.KEEP_LAST}
 }
 
-func getOptions[I any, O any](options []I, defaultOptions O) O {
-	for i := range options {
-		opt, ok := any(options[i]).(O)
-		if ok {
+func getOptions[I any, O any](opts []I, defaultOpt O) O {
+	for i := range opts {
+		if opt, ok := any(opts[i]).(O); ok {
 			return opt
 		}
 	}
 
-	return defaultOptions
+	return defaultOpt
+}
+
+func getNodeOptions[O any](opts []O) []options.NodeOptions {
+	nodeOpts := []options.NodeOptions{}
+	for _, opt := range opts {
+		if nodeOpt, ok := any(opt).(options.NodeOptions); ok {
+			nodeOpts = append(nodeOpts, nodeOpt)
+		}
+	}
+
+	return nodeOpts
 }

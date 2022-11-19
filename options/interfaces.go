@@ -1,5 +1,9 @@
 package options
 
+type NodeOptions interface {
+	supportsNode()
+}
+
 type ForEachOptions interface {
 	supportsForEach()
 }
