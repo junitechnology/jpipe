@@ -18,7 +18,7 @@ func (input *Channel[T]) Filter(predicate func(T) bool) *Channel[T] {
 		})
 	}
 
-	_, output := newLinearPipelineNode("Filter", input, 0, worker)
+	_, output := newLinearPipelineNode("Filter", input, 0, worker, 1)
 	return output
 }
 
@@ -42,7 +42,7 @@ func (input *Channel[T]) Skip(n uint64) *Channel[T] {
 		})
 	}
 
-	_, output := newLinearPipelineNode("Skip", input, 0, worker)
+	_, output := newLinearPipelineNode("Skip", input, 0, worker, 1)
 	return output
 }
 
@@ -66,7 +66,7 @@ func (input *Channel[T]) Take(n uint64) *Channel[T] {
 		})
 	}
 
-	_, output := newLinearPipelineNode("Take", input, 0, worker)
+	_, output := newLinearPipelineNode("Take", input, 0, worker, 1)
 	return output
 }
 
@@ -93,6 +93,6 @@ func Distinct[T any, K comparable](input *Channel[T], getKey func(T) K) *Channel
 		})
 	}
 
-	_, output := newLinearPipelineNode("Distinct", input, 0, worker)
+	_, output := newLinearPipelineNode("Distinct", input, 0, worker, 1)
 	return output
 }

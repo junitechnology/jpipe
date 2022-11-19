@@ -24,9 +24,10 @@ type node[T any, R any] struct {
 	subscriptions   []chan struct{}
 	allUnsubscribed chan struct{}
 
-	worker     func(workerNode[T, R])
-	quitSignal chan struct{}
-	doneSignal chan struct{}
+	worker      func(workerNode[T, R])
+	concurrency int
+	quitSignal  chan struct{}
+	doneSignal  chan struct{}
 }
 
 type workerNode[T any, R any] interface {
@@ -36,7 +37,15 @@ type workerNode[T any, R any] interface {
 	QuitSignal() <-chan struct{}
 }
 
-func newPipelineNode[T any, R any](nodeType string, pipeline *Pipeline, inputs []*Channel[T], numOutputs int, outputChannelSize int, worker func(workerNode[T, R])) (pipelineNode, []*Channel[R]) {
+func newPipelineNode[T any, R any](
+	nodeType string,
+	pipeline *Pipeline,
+	inputs []*Channel[T],
+	numOutputs int,
+	outputChannelSize int,
+	worker func(workerNode[T, R]),
+	concurrency int) (pipelineNode, []*Channel[R]) {
+
 	node := &node[T, R]{
 		nodeType:        nodeType,
 		pipeline:        pipeline,
@@ -48,6 +57,7 @@ func newPipelineNode[T any, R any](nodeType string, pipeline *Pipeline, inputs [
 		worker:          worker,
 		quitSignal:      make(chan struct{}),
 		doneSignal:      make(chan struct{}),
+		concurrency:     concurrency,
 	}
 
 	for _, input := range inputs {
@@ -67,18 +77,18 @@ func newPipelineNode[T any, R any](nodeType string, pipeline *Pipeline, inputs [
 	return node, node.outputs
 }
 
-func newLinearPipelineNode[T any, R any](nodeType string, input *Channel[T], outputChannelSize int, worker func(workerNode[T, R])) (pipelineNode, *Channel[R]) {
-	node, outputs := newPipelineNode(nodeType, input.getPipeline(), []*Channel[T]{input}, 1, outputChannelSize, worker)
+func newLinearPipelineNode[T any, R any](nodeType string, input *Channel[T], outputChannelSize int, worker func(workerNode[T, R]), concurrency int) (pipelineNode, *Channel[R]) {
+	node, outputs := newPipelineNode(nodeType, input.getPipeline(), []*Channel[T]{input}, 1, outputChannelSize, worker, concurrency)
 	return node, outputs[0]
 }
 
-func newSourcePipelineNode[R any](nodeType string, pipeline *Pipeline, outputChannelSize int, worker func(workerNode[any, R])) (pipelineNode, *Channel[R]) {
-	node, outputs := newPipelineNode(nodeType, pipeline, []*Channel[any]{}, 1, outputChannelSize, worker)
+func newSourcePipelineNode[R any](nodeType string, pipeline *Pipeline, outputChannelSize int, worker func(workerNode[any, R]), concurrency int) (pipelineNode, *Channel[R]) {
+	node, outputs := newPipelineNode(nodeType, pipeline, []*Channel[any]{}, 1, outputChannelSize, worker, concurrency)
 	return node, outputs[0]
 }
 
-func newSinkPipelineNode[T any](nodeType string, input *Channel[T], worker func(workerNode[T, any])) pipelineNode {
-	node, _ := newPipelineNode(nodeType, input.getPipeline(), []*Channel[T]{input}, 0, 0, worker)
+func newSinkPipelineNode[T any](nodeType string, input *Channel[T], worker func(workerNode[T, any]), concurrency int) pipelineNode {
+	node, _ := newPipelineNode(nodeType, input.getPipeline(), []*Channel[T]{input}, 0, 0, worker, concurrency)
 	return node
 }
 
@@ -102,7 +112,15 @@ func (node *node[T, R]) Start() {
 			close(node.quitSignal)
 		}()
 
-		node.worker(node)
+		var wg sync.WaitGroup
+		for i := 0; i < node.concurrency; i++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				node.worker(node)
+			}()
+		}
+		wg.Wait()
 	}()
 }
 
