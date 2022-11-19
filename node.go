@@ -1,6 +1,7 @@
 package jpipe
 
 import (
+	"fmt"
 	"sync"
 )
 
@@ -116,7 +117,12 @@ func (node *node[T, R]) Start() {
 		for i := 0; i < node.concurrency; i++ {
 			wg.Add(1)
 			go func() {
-				defer wg.Done()
+				defer func() {
+					wg.Done()
+					if r := recover(); r != nil {
+						node.pipeline.Cancel(fmt.Errorf("%v", r))
+					}
+				}()
 				node.worker(node)
 			}()
 		}
