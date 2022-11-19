@@ -16,14 +16,13 @@ import (
 //  input : 0--1--2--3--4--5--X
 //  output: 10-11-12-13-14-15-X
 func Map[T any, R any](input *Channel[T], mapper func(T) R, opts ...options.MapOptions) *Channel[R] {
-	concurrent := getOptions(opts, Concurrent(1))
 	worker := func(node workerNode[T, R]) {
 		node.LoopInput(0, func(value T) bool {
 			return node.Send(mapper(value))
 		})
 	}
 
-	_, output := newLinearPipelineNode("Map", input, 0, worker, concurrent.Concurrency)
+	_, output := newLinearPipelineNode("Map", input, worker, getNodeOptions(opts)...)
 	return output
 }
 
@@ -36,7 +35,6 @@ func Map[T any, R any](input *Channel[T], mapper func(T) R, opts ...options.MapO
 //  input : 0------1------2------3------4------5------X
 //  output: 0-10---1-11---2-12---3-13---4-14---5-15---X
 func FlatMap[T any, R any](input *Channel[T], mapper func(T) *Channel[R], opts ...options.FlatMapOptions) *Channel[R] {
-	concurrent := getOptions(opts, Concurrent(1))
 	worker := func(node workerNode[T, R]) {
 		node.LoopInput(0, func(value T) bool {
 			mappedChannel := mapper(value)
@@ -51,7 +49,7 @@ func FlatMap[T any, R any](input *Channel[T], mapper func(T) *Channel[R], opts .
 		})
 	}
 
-	_, output := newLinearPipelineNode("FlatMap", input, 0, worker, concurrent.Concurrency)
+	_, output := newLinearPipelineNode("FlatMap", input, worker, getNodeOptions(opts)...)
 	return output
 }
 
@@ -115,7 +113,7 @@ func Batch[T any](input *Channel[T], size int, timeout time.Duration) *Channel[[
 		}
 	}
 
-	_, output := newLinearPipelineNode("Batch", input, 0, worker, 1)
+	_, output := newLinearPipelineNode("Batch", input, worker)
 	return output
 }
 
@@ -129,6 +127,6 @@ func Wrap[T any](input *Channel[T]) *Channel[item.Item[T]] {
 		})
 	}
 
-	_, output := newLinearPipelineNode("Wrap", input, 0, worker, 1)
+	_, output := newLinearPipelineNode("Wrap", input, worker)
 	return output
 }
