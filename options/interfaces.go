@@ -1,32 +1,29 @@
 package options
 
-type NodeOptions interface {
-	supportsNode()
+type NodeOption interface {
+	isNodeOption()
 }
 
-type ForEachOptions interface {
-	supportsForEach()
+type PooledWorkerOption interface {
+	isPooledWorkerOption()
 }
 
-type MapOptions interface {
-	supportsMap()
+type ForEachOption interface {
+	isForEachOption()
 }
 
-type FlatMapOptions interface {
-	supportsFlatMap()
+type MapOption interface {
+	isMapOption()
 }
 
-type BroadcastOptions interface {
-	supportsBroadcast()
+type FlatMapOption interface {
+	isFlatMapOption()
 }
 
-type ToMapOptions interface {
-	supportsToMap()
+type BroadcastOption interface {
+	isBroadcastOption()
 }
 
-type KeepStrategy string
-
-const (
-	KEEP_FIRST KeepStrategy = "KEEP_FIRST"
-	KEEP_LAST  KeepStrategy = "KEEP_LAST"
-)
+type ToMapOption interface {
+	isToMapOption()
+}

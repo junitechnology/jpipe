@@ -4,24 +4,35 @@ type Concurrent struct {
 	Concurrency int
 }
 
-func (c Concurrent) supportsNode()    {}
-func (c Concurrent) supportsForEach() {}
-func (c Concurrent) supportsMap()     {}
-func (c Concurrent) supportsFlatMap() {}
+func (c Concurrent) isPooledWorkerOption() {}
+func (c Concurrent) isForEachOption()      {}
+func (c Concurrent) isMapOption()          {}
+func (c Concurrent) isFlatMapOption()      {}
 
 type Ordered struct {
 	OrderBufferSize int
 }
 
+func (c Ordered) isPooledWorkerOption() {}
+func (c Ordered) isMapOption()          {}
+func (c Ordered) isFlatMapOption()      {}
+
 type Buffered struct {
 	Size int
 }
 
-func (b Buffered) supportsNode()      {}
-func (b Buffered) supportsBroadcast() {}
+func (c Buffered) isNodeOption()      {}
+func (b Buffered) isBroadcastOption() {}
 
 type Keep struct {
 	Strategy KeepStrategy
 }
 
-func (b Keep) supportsToMap() {}
+type KeepStrategy string
+
+const (
+	KEEP_FIRST KeepStrategy = "KEEP_FIRST"
+	KEEP_LAST  KeepStrategy = "KEEP_LAST"
+)
+
+func (b Keep) isToMapOption() {}
