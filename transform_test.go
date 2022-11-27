@@ -54,6 +54,22 @@ func TestMap(t *testing.T) {
 		assert.Less(t, elapsed, 30*time.Millisecond) // It would have taken 50ms serially, but it takes about 20ms with 5 elements and concurrency 3
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
+
+	t.Run("Ordered concurrency yields keeps input order on output", func(t *testing.T) {
+		pipeline := jpipe.New(context.TODO())
+		channel := jpipe.FromRange(pipeline, 1, 1000)
+		mappedChannel := jpipe.Map(channel, func(i int) string {
+			time.Sleep(10 * time.Millisecond)
+			return fmt.Sprintf("%dA", i)
+		}, jpipe.Concurrent(20), jpipe.Ordered(2))
+
+		mappedValues := drainChannel(mappedChannel)
+
+		for i := 0; i < 1000; i++ {
+			assert.Equal(t, fmt.Sprintf("%dA", i+1), mappedValues[i])
+		}
+		assertPipelineDone(t, pipeline, 10*time.Millisecond)
+	})
 }
 
 func TestFlatMap(t *testing.T) {

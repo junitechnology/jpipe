@@ -78,7 +78,7 @@ func (input *Channel[T]) Interval(interval func(value T) time.Duration) *Channel
 //  input  : 0--1--2--3--4--5---X
 //  output1: 0--1--2--3--4--5---X
 //  output2: 0--1--2--3--4--5---X
-func (input *Channel[T]) Broadcast(numOutputs int, opts ...options.BroadcastOptions) []*Channel[T] {
+func (input *Channel[T]) Broadcast(numOutputs int, opts ...options.BroadcastOption) []*Channel[T] {
 	worker := func(node workerNode[T, T]) {
 		node.LoopInput(0, func(value T) bool {
 			return node.Send(value)

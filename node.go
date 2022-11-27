@@ -27,10 +27,9 @@ type node[T any, R any] struct {
 	subscriptions   []chan struct{}
 	allUnsubscribed chan struct{}
 
-	worker      func(workerNode[T, R])
-	concurrency int
-	quitSignal  chan struct{}
-	doneSignal  chan struct{}
+	worker     worker[T, R]
+	quitSignal chan struct{}
+	doneSignal chan struct{}
 }
 
 type workerNode[T any, R any] interface {
@@ -38,6 +37,7 @@ type workerNode[T any, R any] interface {
 	LoopInput(i int, function func(value T) bool)
 	Send(value R) bool
 	QuitSignal() <-chan struct{}
+	HandlePanic()
 }
 
 func newPipelineNode[T any, R any](
@@ -45,11 +45,10 @@ func newPipelineNode[T any, R any](
 	pipeline *Pipeline,
 	inputs []*Channel[T],
 	numOutputs int,
-	worker func(workerNode[T, R]),
-	opts ...options.NodeOptions) (pipelineNode, []*Channel[R]) {
+	worker worker[T, R],
+	opts ...options.NodeOption) (pipelineNode, []*Channel[R]) {
 
-	concurrent := getOptions(opts, Concurrent(1))
-	buffered := getOptions(opts, Buffered(0))
+	buffered := getOptionOrDefault(opts, Buffered(0))
 
 	node := &node[T, R]{
 		nodeType:        nodeType,
@@ -62,7 +61,6 @@ func newPipelineNode[T any, R any](
 		worker:          worker,
 		quitSignal:      make(chan struct{}),
 		doneSignal:      make(chan struct{}),
-		concurrency:     concurrent.Concurrency,
 	}
 
 	for _, input := range inputs {
@@ -82,17 +80,17 @@ func newPipelineNode[T any, R any](
 	return node, node.outputs
 }
 
-func newLinearPipelineNode[T any, R any](nodeType string, input *Channel[T], worker func(workerNode[T, R]), opts ...options.NodeOptions) (pipelineNode, *Channel[R]) {
+func newLinearPipelineNode[T any, R any](nodeType string, input *Channel[T], worker worker[T, R], opts ...options.NodeOption) (pipelineNode, *Channel[R]) {
 	node, outputs := newPipelineNode(nodeType, input.getPipeline(), []*Channel[T]{input}, 1, worker, opts...)
 	return node, outputs[0]
 }
 
-func newSourcePipelineNode[R any](nodeType string, pipeline *Pipeline, worker func(workerNode[any, R]), opts ...options.NodeOptions) (pipelineNode, *Channel[R]) {
+func newSourcePipelineNode[R any](nodeType string, pipeline *Pipeline, worker worker[any, R], opts ...options.NodeOption) (pipelineNode, *Channel[R]) {
 	node, outputs := newPipelineNode(nodeType, pipeline, []*Channel[any]{}, 1, worker, opts...)
 	return node, outputs[0]
 }
 
-func newSinkPipelineNode[T any](nodeType string, input *Channel[T], worker func(workerNode[T, any]), opts ...options.NodeOptions) pipelineNode {
+func newSinkPipelineNode[T any](nodeType string, input *Channel[T], worker worker[T, any], opts ...options.NodeOption) pipelineNode {
 	node, _ := newPipelineNode(nodeType, input.getPipeline(), []*Channel[T]{input}, 0, worker, opts...)
 	return node
 }
@@ -113,24 +111,15 @@ func (node *node[T, R]) Start() {
 			select {
 			case <-node.pipeline.Done():
 			case <-node.allUnsubscribed:
+				for _, input := range node.inputs {
+					input.unsubscribe() // eagerly unsubscribe from inputs here
+				}
 			}
 			close(node.quitSignal)
 		}()
 
-		var wg sync.WaitGroup
-		for i := 0; i < node.concurrency; i++ {
-			wg.Add(1)
-			go func() {
-				defer func() {
-					wg.Done()
-					if r := recover(); r != nil {
-						node.pipeline.Cancel(fmt.Errorf("%v", r))
-					}
-				}()
-				node.worker(node)
-			}()
-		}
-		wg.Wait()
+		defer node.HandlePanic()
+		node.worker(node)
 	}()
 }
 
@@ -167,6 +156,12 @@ func (node *node[T, R]) LoopInput(i int, function func(value T) bool) {
 	loopOverChannel[T, T, R](node, node.inputs[i].getChannel(), function)
 }
 
+func (node *node[T, R]) HandlePanic() {
+	if r := recover(); r != nil {
+		node.pipeline.Cancel(fmt.Errorf("%v", r))
+	}
+}
+
 func (node *node[T, R]) Send(value R) bool {
 	success := false
 	for i := range node.outputs {
@@ -198,21 +193,14 @@ func (node *node[T, R]) unsubscribe(n int) {
 		close(node.subscriptions[n])
 	}
 
-	someSubscribed := false
 	for _, s := range node.subscriptions {
 		select {
 		case <-s:
-		default: // if at least one subscription is still open, we don't have to unsubscribe from inputs
-			someSubscribed = true
+		default: // if at least one subscription is still open, we don't have to close allUnsubscribed
+			return
 		}
 	}
-
-	if !someSubscribed {
-		close(node.allUnsubscribed)
-		for _, input := range node.inputs {
-			input.unsubscribe()
-		}
-	}
+	close(node.allUnsubscribed)
 }
 
 func loopOverChannel[C any, T any, R any](node workerNode[T, R], channel <-chan C, function func(value C) bool) {

@@ -15,12 +15,11 @@ import (
 //
 //  input : 0--1--2--3--4--5--X
 //  output: 10-11-12-13-14-15-X
-func Map[T any, R any](input *Channel[T], mapper func(T) R, opts ...options.MapOptions) *Channel[R] {
-	worker := func(node workerNode[T, R]) {
-		node.LoopInput(0, func(value T) bool {
-			return node.Send(mapper(value))
-		})
+func Map[T any, R any](input *Channel[T], mapper func(T) R, opts ...options.MapOption) *Channel[R] {
+	var processor processor[T, R] = func(value T) (R, bool) {
+		return mapper(value), true
 	}
+	worker := processor.PooledWorker(getPooledWorkerOptions(opts)...)
 
 	_, output := newLinearPipelineNode("Map", input, worker, getNodeOptions(opts)...)
 	return output
@@ -34,20 +33,21 @@ func Map[T any, R any](input *Channel[T], mapper func(T) R, opts ...options.MapO
 //
 //  input : 0------1------2------3------4------5------X
 //  output: 0-10---1-11---2-12---3-13---4-14---5-15---X
-func FlatMap[T any, R any](input *Channel[T], mapper func(T) *Channel[R], opts ...options.FlatMapOptions) *Channel[R] {
-	worker := func(node workerNode[T, R]) {
+func FlatMap[T any, R any](input *Channel[T], mapper func(T) *Channel[R], opts ...options.FlatMapOption) *Channel[R] {
+	var worker worker[T, R] = func(node workerNode[T, R]) {
 		node.LoopInput(0, func(value T) bool {
 			mappedChannel := mapper(value)
-			loopOverChannel(node, mappedChannel.getChannel(), func(outputValue R) bool {
+			for outputValue := range mappedChannel.getChannel() {
 				if !node.Send(outputValue) {
 					mappedChannel.unsubscribe()
 					return false
 				}
-				return true
-			})
+			}
+
 			return true
 		})
 	}
+	worker = worker.Pooled(getPooledWorkerOptions(opts)...)
 
 	_, output := newLinearPipelineNode("FlatMap", input, worker, getNodeOptions(opts)...)
 	return output
