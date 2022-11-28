@@ -8,7 +8,7 @@ grand_parent: Operators
 <h1>Broadcast</h1>
 
 ```go
-func (input *Channel[T]) Broadcast(numOutputs int, opts ...options.BroadcastOptions) []*Channel[T]
+func (input *Channel[T]) Broadcast(numOutputs int, opts ...options.BroadcastOption) []*Channel[T]
 ```
 
 `Broadcast` sends each input value to every output channel.

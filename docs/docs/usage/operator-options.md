@@ -10,7 +10,7 @@ parent: Usage
 Some operators allow tuning their behaviour through options. Take e.g. `Map`:
 
 ```go
-func Map[T any, R any](input *Channel[T], mapper func(T) R, opts ...options.MapOptions) *Channel[R]
+func Map[T any, R any](input *Channel[T], mapper func(T) R, opts ...options.MapOption) *Channel[R]
 ```
 
 The simplest way you can use `Map` is with no options:
@@ -19,11 +19,11 @@ The simplest way you can use `Map` is with no options:
 channel :=  jpipe.Map(channel, func(x int) int { return x * 10 })
 ```
 
-So if you don't care about options, you can just pretend they don't exist, since they are a variadic parameter. But what is this `options.MapOptions` type? Just an interface:
+So if you don't care about options, you can just pretend they don't exist, since they are a variadic parameter. But what is this `options.MapOption` type? Just an interface:
 
 ```go
-type MapOptions interface {
-    supportsMap()
+type MapOption interface {
+    isMapOption()
 }
 ```
 

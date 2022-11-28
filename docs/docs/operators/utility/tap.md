@@ -8,7 +8,7 @@ grand_parent: Operators
 <h1>Tap</h1>
 
 ```go
-func (input *Channel[T]) Tap(function func(T)) *Channel[T]
+func (input *Channel[T]) Tap(function func(T), opts ...options.TapOption) *Channel[T]
 ```
 
 `Tap` runs a function as a side effect for each input value,
