@@ -8,7 +8,7 @@ grand_parent: Operators
 <h1>FlatMap</h1>
 
 ```go
-func FlatMap[T any, R any](input *Channel[T], mapper func(T) *Channel[R], opts ...options.FlatMapOptions) *Channel[R]
+func FlatMap[T any, R any](input *Channel[T], mapper func(T) *Channel[R], opts ...options.FlatMapOption) *Channel[R]
 ```
 
 `FlatMap` transforms every input value into a Channel and for each of those, it sends all values to the output channel.

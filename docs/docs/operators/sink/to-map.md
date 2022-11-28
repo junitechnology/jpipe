@@ -8,7 +8,7 @@ grand_parent: Operators
 <h1>ToMap</h1>
 
 ```go
-func ToMap[T any, K comparable](input *Channel[T], getKey func(T) K, opts ...options.ToMapOptions) <-chan map[K]T
+func ToMap[T any, K comparable](input *Channel[T], getKey func(T) K, opts ...options.ToMapOption) <-chan map[K]T
 ```
 
 `ToMap` puts all values coming from the input channel in a map, using the `getKey` parameter to calculate the key.

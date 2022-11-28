@@ -35,7 +35,7 @@ You can see that `Map` "broke" our chain, because it's not a method on `Channel`
 If we tried to make `Map` a method like this:
 
 ```go
-func (input *Channel[T]) Map[T any, R any](mapper func(T) R, opts ...options.MapOptions) *Channel[R]
+func (input *Channel[T]) Map[T any, R any](mapper func(T) R, opts ...options.MapOption) *Channel[R]
 ```
 
 We would be greeted by this syntax error: `method must have no type parameters`. This was a design decision in Go generics and the reasons for it can be found [here](https://go.googlesource.com/proposal/+/refs/heads/master/design/43651-type-parameters.md#no-parameterized-methods).

@@ -8,7 +8,7 @@ grand_parent: Operators
 <h1>ForEach</h1>
 
 ```go
-func (input *Channel[T]) ForEach(function func(T), opts ...options.ForEachOptions) <-chan struct{}
+func (input *Channel[T]) ForEach(function func(T), opts ...options.ForEachOption) <-chan struct{}
 ```
 
 `ForEach` calls the function passed as parameter for every value coming from the input channel.

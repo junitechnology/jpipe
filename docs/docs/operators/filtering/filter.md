@@ -8,7 +8,7 @@ grand_parent: Operators
 <h1>Filter</h1>
 
 ```go
-func (input *Channel[T]) Filter(predicate func(T) bool) *Channel[T]
+func (input *Channel[T]) Filter(predicate func(T) bool, opts ...options.FilterOption) *Channel[T]
 ```
 
 `Filter` sends to the output channel only the input values that match the predicate function.
