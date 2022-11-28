@@ -1,5 +1,7 @@
 package jpipe
 
+import "github.com/junitechnology/jpipe/options"
+
 // Filter sends to the output channel only the input values that match the predicate.
 //
 // Example:
@@ -8,15 +10,11 @@ package jpipe
 //
 //  input : 0--1--2--3--4--5-X
 //  output: ---1-----3-----5-X
-func (input *Channel[T]) Filter(predicate func(T) bool) *Channel[T] {
-	worker := func(node workerNode[T, T]) {
-		node.LoopInput(0, func(value T) bool {
-			if predicate(value) {
-				return node.Send(value)
-			}
-			return true
-		})
+func (input *Channel[T]) Filter(predicate func(T) bool, opts ...options.FilterOption) *Channel[T] {
+	var processor processor[T, T] = func(value T) (T, bool) {
+		return value, predicate(value)
 	}
+	worker := processor.PooledWorker(getPooledWorkerOptions(opts)...)
 
 	_, output := newLinearPipelineNode("Filter", input, worker)
 	return output

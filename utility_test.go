@@ -8,6 +8,7 @@ import (
 
 	"github.com/junitechnology/jpipe"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/exp/slices"
 )
 
 func TestBuffer(t *testing.T) {
@@ -90,6 +91,65 @@ func TestTap(t *testing.T) {
 
 		assertChannelClosed(t, goChannel)
 		assert.Less(t, len(goChannel), 7)
+		assertPipelineDone(t, pipeline, 10*time.Millisecond)
+	})
+
+	t.Run("Concurrency yields reduced processing times", func(t *testing.T) {
+		slice := []int{1, 2, 3, 4, 5}
+		pipeline := jpipe.New(context.TODO())
+		valuesFromTap := make([]int, 5)
+		start := time.Now()
+		channel := jpipe.FromSlice(pipeline, slice).
+			Tap(func(i int) {
+				time.Sleep(10 * time.Millisecond)
+				valuesFromTap[i-1] = i // not using append to avoid the need for synchronization
+			}, jpipe.Concurrent(3))
+
+		outputValues := drainChannel(channel)
+		elapsed := time.Since(start)
+
+		slices.Sort(valuesFromTap)
+		slices.Sort(outputValues) // The output order with concurrency is unpredictable
+		assert.Equal(t, slice, valuesFromTap)
+		assert.Equal(t, slice, outputValues)
+		assert.Less(t, elapsed, 30*time.Millisecond) // It would have taken 50ms serially, but it takes about 20ms with 5 elements and concurrency 3
+		assertPipelineDone(t, pipeline, 10*time.Millisecond)
+	})
+
+	t.Run("Ordered concurrency yields reduced processing times", func(t *testing.T) {
+		slice := []int{1, 2, 3, 4, 5}
+		pipeline := jpipe.New(context.TODO())
+		valuesFromTap := make([]int, 5)
+		start := time.Now()
+		channel := jpipe.FromSlice(pipeline, slice).
+			Tap(func(i int) {
+				time.Sleep(10 * time.Millisecond)
+				valuesFromTap[i-1] = i // not using append to avoid the need for synchronization
+			}, jpipe.Concurrent(3), jpipe.Ordered(3))
+
+		outputValues := drainChannel(channel)
+		elapsed := time.Since(start)
+
+		slices.Sort(valuesFromTap) // The tap execution order with concurrency is unpredictable
+		assert.Equal(t, slice, valuesFromTap)
+		assert.Equal(t, slice, outputValues)
+		assert.Less(t, elapsed, 30*time.Millisecond) // It would have taken 50ms serially, but it takes about 20ms with 5 elements and concurrency 3
+		assertPipelineDone(t, pipeline, 10*time.Millisecond)
+	})
+
+	t.Run("Ordered concurrency keeps input order on output", func(t *testing.T) {
+		pipeline := jpipe.New(context.TODO())
+		channel := jpipe.FromRange(pipeline, 1, 1000).
+			Tap(func(i int) {
+				time.Sleep(10 * time.Millisecond)
+			}, jpipe.Concurrent(20), jpipe.Ordered(20))
+
+		outputValues := drainChannel(channel)
+
+		assert.Len(t, outputValues, 1000)
+		for i := 0; i < 1000; i++ {
+			assert.Equal(t, i+1, outputValues[i])
+		}
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 }

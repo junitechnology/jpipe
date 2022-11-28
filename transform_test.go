@@ -55,16 +55,34 @@ func TestMap(t *testing.T) {
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 
-	t.Run("Ordered concurrency yields keeps input order on output", func(t *testing.T) {
+	t.Run("Ordered concurrency yields reduced processing times", func(t *testing.T) {
+		pipeline := jpipe.New(context.TODO())
+		channel := jpipe.FromSlice(pipeline, []int{1, 2, 3, 4, 5})
+		start := time.Now()
+		mappedChannel := jpipe.Map(channel, func(i int) string {
+			time.Sleep(10 * time.Millisecond)
+			return fmt.Sprintf("%dA", i)
+		}, jpipe.Concurrent(3), jpipe.Ordered(3))
+
+		mappedValues := drainChannel(mappedChannel)
+		elapsed := time.Since(start)
+
+		assert.Equal(t, []string{"1A", "2A", "3A", "4A", "5A"}, mappedValues)
+		assert.Less(t, elapsed, 30*time.Millisecond) // It would have taken 50ms serially, but it takes about 20ms with 5 elements and concurrency 3
+		assertPipelineDone(t, pipeline, 10*time.Millisecond)
+	})
+
+	t.Run("Ordered concurrency keeps input order on output", func(t *testing.T) {
 		pipeline := jpipe.New(context.TODO())
 		channel := jpipe.FromRange(pipeline, 1, 1000)
 		mappedChannel := jpipe.Map(channel, func(i int) string {
 			time.Sleep(10 * time.Millisecond)
 			return fmt.Sprintf("%dA", i)
-		}, jpipe.Concurrent(20), jpipe.Ordered(2))
+		}, jpipe.Concurrent(20), jpipe.Ordered(20))
 
 		mappedValues := drainChannel(mappedChannel)
 
+		assert.Len(t, mappedValues, 1000)
 		for i := 0; i < 1000; i++ {
 			assert.Equal(t, fmt.Sprintf("%dA", i+1), mappedValues[i])
 		}

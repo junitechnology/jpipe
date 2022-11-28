@@ -27,3 +27,11 @@ type BroadcastOption interface {
 type ToMapOption interface {
 	isToMapOption()
 }
+
+type FilterOption interface {
+	isFilterOption()
+}
+
+type TapOption interface {
+	isTapOption()
+}
