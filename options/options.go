@@ -8,20 +8,24 @@ func (c Concurrent) isPooledWorkerOption() {}
 func (c Concurrent) isForEachOption()      {}
 func (c Concurrent) isMapOption()          {}
 func (c Concurrent) isFlatMapOption()      {}
+func (c Concurrent) isFilterOption()       {}
+func (c Concurrent) isTapOption()          {}
 
 type Ordered struct {
 	OrderBufferSize int
 }
 
-func (c Ordered) isPooledWorkerOption() {}
-func (c Ordered) isMapOption()          {}
-func (c Ordered) isFlatMapOption()      {}
+func (o Ordered) isPooledWorkerOption() {}
+func (o Ordered) isMapOption()          {}
+func (o Ordered) isFlatMapOption()      {}
+func (o Ordered) isFilterOption()       {}
+func (o Ordered) isTapOption()          {}
 
 type Buffered struct {
 	Size int
 }
 
-func (c Buffered) isNodeOption()      {}
+func (batch Buffered) isNodeOption()  {}
 func (b Buffered) isBroadcastOption() {}
 
 type Keep struct {
@@ -35,4 +39,4 @@ const (
 	KEEP_LAST  KeepStrategy = "KEEP_LAST"
 )
 
-func (b Keep) isToMapOption() {}
+func (k Keep) isToMapOption() {}

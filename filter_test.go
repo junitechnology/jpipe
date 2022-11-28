@@ -7,6 +7,7 @@ import (
 
 	"github.com/junitechnology/jpipe"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/exp/slices"
 )
 
 func TestFilter(t *testing.T) {
@@ -31,6 +32,57 @@ func TestFilter(t *testing.T) {
 		cancelPipeline(pipeline)
 
 		assertChannelClosed(t, goChannel)
+		assertPipelineDone(t, pipeline, 10*time.Millisecond)
+	})
+
+	t.Run("Concurrency yields reduced processing times", func(t *testing.T) {
+		pipeline := jpipe.New(context.TODO())
+		start := time.Now()
+		channel := jpipe.FromSlice(pipeline, []int{1, 2, 3, 4, 5}).
+			Filter(func(i int) bool {
+				time.Sleep(10 * time.Millisecond)
+				return i%2 == 1
+			}, jpipe.Concurrent(3))
+
+		mappedValues := drainChannel(channel)
+		elapsed := time.Since(start)
+
+		slices.Sort(mappedValues) // The output order with concurrency is unpredictable
+		assert.Equal(t, []int{1, 3, 5}, mappedValues)
+		assert.Less(t, elapsed, 30*time.Millisecond) // It would have taken 50ms serially, but it takes about 20ms with 5 elements and concurrency 3
+		assertPipelineDone(t, pipeline, 10*time.Millisecond)
+	})
+
+	t.Run("Ordered concurrency yields reduced processing times", func(t *testing.T) {
+		pipeline := jpipe.New(context.TODO())
+		start := time.Now()
+		channel := jpipe.FromSlice(pipeline, []int{1, 2, 3, 4, 5}).
+			Filter(func(i int) bool {
+				time.Sleep(10 * time.Millisecond)
+				return i%2 == 1
+			}, jpipe.Concurrent(3), jpipe.Ordered(3))
+
+		mappedValues := drainChannel(channel)
+		elapsed := time.Since(start)
+
+		assert.Equal(t, []int{1, 3, 5}, mappedValues)
+		assert.Less(t, elapsed, 30*time.Millisecond) // It would have taken 50ms serially, but it takes about 20ms with 5 elements and concurrency 3
+		assertPipelineDone(t, pipeline, 10*time.Millisecond)
+	})
+
+	t.Run("Ordered concurrency keeps input order on output", func(t *testing.T) {
+		pipeline := jpipe.New(context.TODO())
+		channel := jpipe.FromRange(pipeline, 1, 1000).
+			Filter(func(i int) bool {
+				time.Sleep(10 * time.Millisecond)
+				return i%2 == 1
+			}, jpipe.Concurrent(20), jpipe.Ordered(20))
+		filteredValues := drainChannel(channel)
+
+		assert.Len(t, filteredValues, 500)
+		for i := 0; i < 500; i++ {
+			assert.Equal(t, 2*i+1, filteredValues[i])
+		}
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 }

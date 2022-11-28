@@ -21,13 +21,12 @@ func (input *Channel[T]) Buffer(n int) *Channel[T] {
 
 // Tap runs a function as a side effect for each input value, and then sends the input values transparently to the output channel.
 // A common use case is logging.
-func (input *Channel[T]) Tap(function func(T)) *Channel[T] {
-	worker := func(node workerNode[T, T]) {
-		node.LoopInput(0, func(value T) bool {
-			function(value)
-			return node.Send(value)
-		})
+func (input *Channel[T]) Tap(function func(T), opts ...options.TapOption) *Channel[T] {
+	var processor processor[T, T] = func(value T) (T, bool) {
+		function(value)
+		return value, true
 	}
+	worker := processor.PooledWorker(getPooledWorkerOptions(opts)...)
 
 	_, output := newLinearPipelineNode("Tap", input, worker)
 	return output
