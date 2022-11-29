@@ -190,39 +190,3 @@ func TestInterval(t *testing.T) {
 		assertPipelineDone(t, pipeline, 60*time.Millisecond)
 	})
 }
-
-func TestBroadcast(t *testing.T) {
-	t.Run("Broadcasts all values to each channel", func(t *testing.T) {
-		pipeline := jpipe.NewPipeline(jpipe.Config{StartManually: true})
-		channel := jpipe.FromSlice(pipeline, []int{1, 2, 3})
-		broadcastChannels := channel.Broadcast(2)
-		goChannel1 := broadcastChannels[0].ToGoChannel()
-		goChannel2 := broadcastChannels[1].ToGoChannel()
-		pipeline.Start()
-
-		assert.Equal(t, 1, <-goChannel1)
-		assert.Equal(t, 1, <-goChannel2)
-		assert.Equal(t, 2, <-goChannel1)
-		assert.Equal(t, 2, <-goChannel2)
-		assert.Equal(t, 3, <-goChannel1)
-		assert.Equal(t, 3, <-goChannel2)
-		assertPipelineDone(t, pipeline, 10*time.Millisecond)
-	})
-
-	t.Run("Broadcasts exits early if context done", func(t *testing.T) {
-		pipeline := jpipe.NewPipeline(jpipe.Config{StartManually: true})
-		channel := jpipe.FromSlice(pipeline, []int{1, 2, 3})
-		broadcastChannels := channel.Broadcast(2)
-		goChannel1 := broadcastChannels[0].ToGoChannel()
-		goChannel2 := broadcastChannels[1].ToGoChannel()
-		pipeline.Start()
-
-		<-goChannel1
-		<-goChannel2
-		cancelPipeline(pipeline)
-
-		assertChannelClosed(t, goChannel1)
-		assertChannelClosed(t, goChannel2)
-		assertPipelineDone(t, pipeline, 10*time.Millisecond)
-	})
-}

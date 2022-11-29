@@ -25,7 +25,8 @@ type Buffered struct {
 	Size int
 }
 
-func (batch Buffered) isNodeOption()  {}
+func (b Buffered) isNodeOption()      {}
+func (b Buffered) isSplitOption()     {}
 func (b Buffered) isBroadcastOption() {}
 
 type Keep struct {

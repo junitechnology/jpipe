@@ -42,7 +42,7 @@ There are two special types of operators:
 - **Source:** Source operators generate data into the pipeline. They have no inputs and one output `Channel`. In DAG terms, they are root nodes.
 - **Sink:** Sink operators consume data from the pipeline. They have one input and no output `Channel`s. Processed data is yielded by the operator on a Go channel, but this is not part of the `Pipeline` anymore. In DAG terms, sink operators are leaf nodes.
 
-The rest of the operators are intermediate operators. They have at least one input and at least one output. Intermediate operators can be further classified in *combination*, *filtering*, *transformation* and *utility* operators, but that's not relevant at this point.
+The rest of the operators are intermediate operators. They have at least one input and at least one output. Intermediate operators can be further classified in *combination*, *fan-out*, *filtering*, *transformation* and *utility* operators, but that's not relevant at this point.
 
 <h2>Creating a pipeline</h2>
 
