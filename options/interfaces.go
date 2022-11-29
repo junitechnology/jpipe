@@ -20,6 +20,10 @@ type FlatMapOption interface {
 	isFlatMapOption()
 }
 
+type SplitOption interface {
+	isSplitOption()
+}
+
 type BroadcastOption interface {
 	isBroadcastOption()
 }

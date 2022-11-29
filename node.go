@@ -46,6 +46,7 @@ func newPipelineNode[T any, R any](
 	inputs []*Channel[T],
 	numOutputs int,
 	worker worker[T, R],
+	sharedOutput bool,
 	opts ...options.NodeOption) (pipelineNode, []*Channel[R]) {
 
 	buffered := getOptionOrDefault(opts, Buffered(0))
@@ -55,7 +56,6 @@ func newPipelineNode[T any, R any](
 		pipeline:        pipeline,
 		inputs:          inputs,
 		outputs:         make([]*Channel[R], numOutputs),
-		outputWriters:   make([]chan<- R, numOutputs),
 		subscriptions:   make([]chan struct{}, numOutputs),
 		allUnsubscribed: make(chan struct{}),
 		worker:          worker,
@@ -67,11 +67,23 @@ func newPipelineNode[T any, R any](
 		input.setToNode(node)
 	}
 
+	sharedOutputChannel := make(chan R, buffered.Size)
+	if sharedOutput {
+		node.outputWriters = []chan<- R{sharedOutputChannel}
+	} else {
+		node.outputWriters = make([]chan<- R, numOutputs)
+	}
 	for i := 0; i < numOutputs; i++ {
-		goChannel := make(chan R, buffered.Size)
+		var goChannel chan R
+		if sharedOutput {
+			goChannel = sharedOutputChannel
+		} else {
+			goChannel = make(chan R, buffered.Size)
+			node.outputWriters[i] = goChannel
+		}
+
 		n := i // avoid capturing the loop var i in the unsubscriber closure
 		node.outputs[i] = newChannel(pipeline, goChannel, func() { node.unsubscribe(n) })
-		node.outputWriters[i] = goChannel
 		node.subscriptions[i] = make(chan struct{})
 	}
 
@@ -81,24 +93,24 @@ func newPipelineNode[T any, R any](
 }
 
 func newLinearPipelineNode[T any, R any](nodeType string, input *Channel[T], worker worker[T, R], opts ...options.NodeOption) (pipelineNode, *Channel[R]) {
-	node, outputs := newPipelineNode(nodeType, input.getPipeline(), []*Channel[T]{input}, 1, worker, opts...)
+	node, outputs := newPipelineNode(nodeType, input.getPipeline(), []*Channel[T]{input}, 1, worker, false, opts...)
 	return node, outputs[0]
 }
 
 func newSourcePipelineNode[R any](nodeType string, pipeline *Pipeline, worker worker[any, R], opts ...options.NodeOption) (pipelineNode, *Channel[R]) {
-	node, outputs := newPipelineNode(nodeType, pipeline, []*Channel[any]{}, 1, worker, opts...)
+	node, outputs := newPipelineNode(nodeType, pipeline, []*Channel[any]{}, 1, worker, false, opts...)
 	return node, outputs[0]
 }
 
 func newSinkPipelineNode[T any](nodeType string, input *Channel[T], worker worker[T, any], opts ...options.NodeOption) pipelineNode {
-	node, _ := newPipelineNode(nodeType, input.getPipeline(), []*Channel[T]{input}, 0, worker, opts...)
+	node, _ := newPipelineNode(nodeType, input.getPipeline(), []*Channel[T]{input}, 0, worker, false, opts...)
 	return node
 }
 
 func (node *node[T, R]) Start() {
 	go func() {
 		defer func() {
-			for i := range node.outputs {
+			for i := range node.outputWriters {
 				close(node.outputWriters[i])
 			}
 			for i := range node.inputs {
@@ -163,6 +175,23 @@ func (node *node[T, R]) HandlePanic() {
 }
 
 func (node *node[T, R]) Send(value R) bool {
+	// handle shared output case
+	if len(node.outputWriters) == 1 && len(node.outputs) > 1 {
+		select {
+		case <-node.quitSignal:
+			return false
+		default:
+			select {
+			case <-node.quitSignal:
+				return false
+			case <-node.allUnsubscribed:
+				return false
+			case node.outputWriters[0] <- value:
+				return true
+			}
+		}
+	}
+
 	success := false
 	for i := range node.outputs {
 		select {

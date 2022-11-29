@@ -30,7 +30,7 @@ func Merge[T any](inputs ...*Channel[T]) *Channel[T] {
 		wg.Wait()
 	}
 
-	_, output := newPipelineNode("Merge", inputs[0].getPipeline(), inputs, 1, worker)
+	_, output := newPipelineNode("Merge", inputs[0].getPipeline(), inputs, 1, worker, false)
 	return output[0]
 }
 
@@ -54,6 +54,6 @@ func Concat[T any](inputs ...*Channel[T]) *Channel[T] {
 		}
 	}
 
-	_, output := newPipelineNode("Concat", inputs[0].getPipeline(), inputs, 1, worker)
+	_, output := newPipelineNode("Concat", inputs[0].getPipeline(), inputs, 1, worker, false)
 	return output[0]
 }
