@@ -38,8 +38,8 @@ channel :=  jpipe.Map(channel, func(x int) int { return x * 10 }, jpipe.Concurre
 The full list of options is:
 
 - `jpipe.Concurrent(concurrency int)`: Controls the concurrency of the operator.
-- `jpipe.Ordered(bufferSize int)`: Makes the operator output ordered(same order as input).
+- `jpipe.Ordered(orderBufferSize int)`: Makes the operator output ordered(same order as input).
 - `jpipe.Buffered(size int)`: Makes the output channel(s) of the operator buffered.
-- `jpipe.KeepFirst` and `jpipe.KeepLast`: If the operator must select a value out of many, this option controls whether it picks the first or the last one.
+- `jpipe.KeepFirst()` and `jpipe.KeepLast()`: If the operator must select a value out of many, this option controls whether it picks the first or the last one.
 
 The actual usage of these options will become easier to understand as you progress through this guide.
