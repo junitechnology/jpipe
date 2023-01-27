@@ -33,7 +33,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Copy docs
-        run: cp -R ./docs/* . && rm -rf docs && ls -la
+        run: mv ./docs ./docs1 && cp -R ./docs1/* . && rm -rf docs1
       - name: Setup Ruby
         uses: ruby/setup-ruby@ee2113536afb7f793eed4ce60e8d3b26db912da4 # v1.127.0
         with:
