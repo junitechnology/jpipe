@@ -18,4 +18,4 @@ func FlatMap[T any, R any](input *Channel[T], mapper func(T) *Channel[R], opts .
 ```go
 output := FlatMap(input, func(i int) *Channel[int] { return FromSlice([]int{i, i * 10}) })
 ```
-![](/assets/images/diagrams/transformation/flatmap.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/transformation/flatmap.svg){:class="img-responsive"}

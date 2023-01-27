@@ -20,7 +20,7 @@ The resulting map is sent to the returned channel when all input values have bee
 ```go
 output := ToMap(input, func(value string) string { return strings.Split(value, "_")[0] })
 ```
-![](/assets/images/diagrams/sink/to-map.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/sink/to-map.svg){:class="img-responsive"}
 ```
 result = {A:A_0, B:B_1, C:C_2}
 ```

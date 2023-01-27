@@ -21,4 +21,4 @@ Calculating the sum of all input values
 ```go
 output := Reduce(input, func(acc int64, value int) int64 { return acc + int64(value) })
 ```
-![](/assets/images/diagrams/sink/reduce.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/sink/reduce.svg){:class="img-responsive"}

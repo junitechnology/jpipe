@@ -22,4 +22,4 @@ This operator is prone to generating backpressure, so use it with care, and cons
 ```go
 output := input.Interval(4*time.Millisecond)
 ```
-![](/assets/images/diagrams/utility/interval.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/utility/interval.svg){:class="img-responsive"}

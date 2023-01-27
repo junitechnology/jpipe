@@ -18,4 +18,4 @@ func (input *Channel[T]) Split(numOutputs int, opts ...options.SplitOption) []*C
 ```go
 outputs := input.Split(2)
 ```
-![](/assets/images/diagrams/fanout/split.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/fanout/split.svg){:class="img-responsive"}

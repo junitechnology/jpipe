@@ -19,4 +19,4 @@ Values from input channels are sent to the output channel as they arrive, with n
 ```go
 output := Merge(input1, input2)
 ```
-![](/assets/images/diagrams/combination/merge.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/combination/merge.svg){:class="img-responsive"}

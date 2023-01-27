@@ -22,9 +22,9 @@ If instead some value does not match the predicate, `false` is immediately sent 
 ```go
 output := input.All(func(value int) bool { return value < 4 })
 ```
-![](/assets/images/diagrams/sink/all-1.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/sink/all-1.svg){:class="img-responsive"}
 
 ```go
 output := input.All(func(value int) bool { return value < 2 })
 ```
-![](/assets/images/diagrams/sink/all-2.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/sink/all-2.svg){:class="img-responsive"}

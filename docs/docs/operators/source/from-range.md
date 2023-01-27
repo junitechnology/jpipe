@@ -19,4 +19,4 @@ All integers between `start` and `end` (both inclusive) are sent to the channel 
 ```go
 channel := FromSlice(pipeline, 1, 3)
 ```
-![](/assets/images/diagrams/source/from-range.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/source/from-range.svg){:class="img-responsive"}

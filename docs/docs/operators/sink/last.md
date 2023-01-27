@@ -20,4 +20,4 @@ The last value is sent to the returned channel when all input values have been p
 ```go
 output := input.Last()
 ```
-![](/assets/images/diagrams/sink/last.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/sink/last.svg){:class="img-responsive"}

@@ -19,4 +19,4 @@ It is useful to avoid backpressure from slow consumers.
 ```go
 output := input.Buffer(2)
 ```
-![](/assets/images/diagrams/utility/buffer.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/utility/buffer.svg){:class="img-responsive"}

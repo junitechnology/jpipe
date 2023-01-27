@@ -22,9 +22,9 @@ If instead some value is found to match the predicate, `true` is immediately sen
 ```go
 output := input.Any(func(value int) bool { return value > 3 })
 ```
-![](/assets/images/diagrams/sink/any-1.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/sink/any-1.svg){:class="img-responsive"}
 
 ```go
 output := input.Any(func(value int) bool { return value >= 2 })
 ```
-![](/assets/images/diagrams/sink/any-2.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/sink/any-2.svg){:class="img-responsive"}

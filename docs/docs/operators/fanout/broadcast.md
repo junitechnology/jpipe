@@ -23,4 +23,4 @@ To avoid this, consider using `options.Buffered` and the output channels will be
 ```go
 outputs := input.Broadcast(2)
 ```
-![](/assets/images/diagrams/fanout/broadcast.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/fanout/broadcast.svg){:class="img-responsive"}

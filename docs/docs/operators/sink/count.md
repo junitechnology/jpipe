@@ -20,4 +20,4 @@ The final count is sent to the return channel when all input values have been pr
 ```go
 output := input.Count()
 ```
-![](/assets/images/diagrams/sink/count.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/sink/count.svg){:class="img-responsive"}

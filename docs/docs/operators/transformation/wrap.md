@@ -24,4 +24,4 @@ Another use for `Item[T]` is using the `Context` in it and enriching it in succe
 ```go
 output := Wrap(input)
 ```
-![](/assets/images/diagrams/transformation/wrap.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/transformation/wrap.svg){:class="img-responsive"}
