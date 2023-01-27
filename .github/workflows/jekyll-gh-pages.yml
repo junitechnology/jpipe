@@ -28,7 +28,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Copy docs
-        run: cp -R ./docs . && rm -rf docs
+        run: cp -R ./docs/* . && rm -rf docs
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Build with Jekyll
