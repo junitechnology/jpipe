@@ -19,4 +19,4 @@ All values in the slice are sent to the channel in order.
 ```go
 channel := FromSlice(pipeline, []int{1,2,3})
 ```
-![](/assets/images/diagrams/source/from-slice.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/source/from-slice.svg){:class="img-responsive"}

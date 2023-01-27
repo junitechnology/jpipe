@@ -22,9 +22,9 @@ If instead some value matches the predicate, `false` is immediately sent to the 
 ```go
 input.None(func(value int) bool { return value > 3 })
 ```
-![](/assets/images/diagrams/sink/none-1.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/sink/none-1.svg){:class="img-responsive"}
 
 ```go
 output := input.None(func(value int) bool { return value >= 2 })
 ```
-![](/assets/images/diagrams/sink/none-2.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/sink/none-2.svg){:class="img-responsive"}

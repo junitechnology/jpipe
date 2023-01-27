@@ -18,4 +18,4 @@ func Map[T any, R any](input *Channel[T], mapper func(T) R, opts ...options.MapO
 ```go
 output := Map(input, func(i int) int { return i * 10 })
 ```
-![](/assets/images/diagrams/transformation/map.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/transformation/map.svg){:class="img-responsive"}

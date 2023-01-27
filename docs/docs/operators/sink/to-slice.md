@@ -20,4 +20,4 @@ The resulting slice is sent to the returned channel when all input values have b
 ```go
 output := input.ToSlice()
 ```
-![](/assets/images/diagrams/sink/to-slice.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/sink/to-slice.svg){:class="img-responsive"}

@@ -18,4 +18,4 @@ func (input *Channel[T]) Filter(predicate func(T) bool, opts ...options.FilterOp
 ```go
 output := input.Filter(func(x int) bool { return x%2 == 1 })
 ```
-![](/assets/images/diagrams/filtering/filter.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/filtering/filter.svg){:class="img-responsive"}

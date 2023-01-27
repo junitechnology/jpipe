@@ -19,4 +19,4 @@ Values returned by the function are sent to the channel in order.
 ```go
 channel := FromGenerator(pipeline, func(i int64) int64 { return i * 10 })
 ```
-![](/assets/images/diagrams/source/from-generator.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/source/from-generator.svg){:class="img-responsive"}

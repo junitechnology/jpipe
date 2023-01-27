@@ -21,4 +21,4 @@ so keep in mind that it could exhaust memory if too many distinct values are rec
 ```go
 output := Distinct(input, func(value int) int { return value })
 ```
-![](/assets/images/diagrams/filtering/distinct.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/filtering/distinct.svg){:class="img-responsive"}

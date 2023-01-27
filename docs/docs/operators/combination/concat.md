@@ -19,4 +19,4 @@ Channels are consumed in order, e.g., the second channel won't be consumed until
 ```go
 output := Concat(input1, input2)
 ```
-![](/assets/images/diagrams/combination/concat.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/combination/concat.svg){:class="img-responsive"}

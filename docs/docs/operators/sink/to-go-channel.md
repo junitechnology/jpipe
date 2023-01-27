@@ -20,4 +20,4 @@ The returned Go channel closes when all input values have been processed, or the
 ```go
 output := input.ToGoChannel()
 ```
-![](/assets/images/diagrams/sink/to-go-channel.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/sink/to-go-channel.svg){:class="img-responsive"}

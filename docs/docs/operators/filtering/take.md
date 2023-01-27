@@ -18,4 +18,4 @@ func (input *Channel[T]) Take(n uint64)
 ```go
 output := input.Take(3)
 ```
-![](/assets/images/diagrams/filtering/take.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/filtering/take.svg){:class="img-responsive"}

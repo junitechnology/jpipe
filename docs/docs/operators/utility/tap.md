@@ -20,7 +20,7 @@ A common use case is logging.
 ```go
 output := input.Tap(func(x int) { fmt.Println(x)})
 ```
-![](/assets/images/diagrams/utility/tap.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/utility/tap.svg){:class="img-responsive"}
 ```
 Console output:
 1

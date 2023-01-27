@@ -18,4 +18,4 @@ func (input *Channel[T]) Skip(n uint64) *Channel[T]
 ```go
 output := input.Skip(3)
 ```
-![](/assets/images/diagrams/filtering/skip.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/filtering/skip.svg){:class="img-responsive"}

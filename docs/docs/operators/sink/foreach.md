@@ -20,7 +20,7 @@ The returned channel will close when all input values have been processed, or th
 ```go
 <-input.ForEach(func(x int) { fmt.Println(x)})
 ```
-![](/assets/images/diagrams/sink/foreach.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/sink/foreach.svg){:class="img-responsive"}
 ```
 Console output:
 1

@@ -18,4 +18,4 @@ func FromGoChannel[T any](pipeline *Pipeline, channel <-chan T) *Channel[T]
 ```go
 channel := FromGoChannel(pipeline, goChannel)
 ```
-![](/assets/images/diagrams/source/from-go-channel.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/source/from-go-channel.svg){:class="img-responsive"}

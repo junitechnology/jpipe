@@ -10,3 +10,5 @@ mermaid:
   version: "9.2.2"
 
 url: https://jpipe.junitechnology.github.io
+
+remote_theme: just-the-docs/just-the-docs

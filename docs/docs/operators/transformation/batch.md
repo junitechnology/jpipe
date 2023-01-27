@@ -26,4 +26,4 @@ In that case, only the related condition above is not taken into consideration.
 ```go
 output := Batch(input, 3, 0)
 ```
-![](/assets/images/diagrams/transformation/batch.svg){:class="img-responsive"}
+![](../../../assets/images/diagrams/transformation/batch.svg){:class="img-responsive"}
