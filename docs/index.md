@@ -35,29 +35,29 @@ channel := make(chan int)
 concurrency := 5
 var wg sync.WaitGroup
 for i := 0; i < concurrency; i++ {
-    wg.Add(1)
-    go func() {
-        defer wg.Done()
-        for value := range channel {
-            expensiveIOOperation(id)
-        }
-        defer wg.Done()
-    }()
+  wg.Add(1)
+  go func() {
+    defer wg.Done()
+    for id := range channel {
+      expensiveIOOperation(id)
+    }
+  }()
 }
 
+outer:
 for _, id := range ids {
+  select {
+  // The nested select gives priority to the ctx.Done() signal, so we always exit early if needed
+  // Without it, a single select just has no priority, so a new value could be processed even if the context has been canceled
+  case <-ctx.Done():
+    break outer
+  default:
     select {
-    // The nested select gives priority to the ctx.Done() signal, so we always exit early if needed
-    // Without it, a single select just has no priority, so a new value could be processed even if the context has been canceled
-    case <-ctx.Done():
-        break
-    default:
-        select {
-        case channel <- id:
-        case <-ctx.Done(): // always check ctx.Done() to avoid leaking the goroutine
-            break
-        }
+    case channel <- id:
+    case <-ctx.Done(): // always check ctx.Done() to avoid leaking the goroutine
+      break outer
     }
+  }
 }
 close(channel)
 
