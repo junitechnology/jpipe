@@ -31,7 +31,7 @@ This lazy behavior allows for the work to start at a well defined time. But also
 The prepared pipeline may contain the sink operator itself. In that case, auto-start would trigger execution before the pipeline consumer receives the pipeline.
 
 ```go
-pipeline := jpipe.New(ctx, jpipe.Config{Context: ctx, StartAutomatically: false})
+pipeline := jpipe.NewPipeline(ctx, jpipe.Config{Context: ctx, StartManually: true})
 jpipe.FromRange(pipeline, 1, 1000).
     Filter(func(id int) bool { return !idExists(id) }).
     Take(5).

@@ -30,7 +30,7 @@ func (input *Channel[T]) ToSliceSync() []T
 But this synchronous version would be very limiting. Having the possibility to get result asynchronously comes handy in more complex scenarios. For starters, the synchronous version would not allow to have lazy pipeline execution:
 
 ```go
-pipeline := jpipe.New(ctx, jpipe.Config{Context: ctx, StartAutomatically: false})
+pipeline := jpipe.NewPipeline(ctx, jpipe.Config{Context: ctx, StartManually: true})
 channel := jpipe.FromRange(1, 1000)
 names := jpipe.Map(channel, func(id int) string { getNameFromAPI(id) })
     .ToSliceSync() // it would block here
