@@ -28,7 +28,7 @@ wrappedChannel := jpipe.Wrap(channel)
 
 <h2>Error handling</h2>
 
-Pipeline errors occur when the pipeline gets canceled, either automatically by context cancelation, or manually by calling `pipeline.Cancel(error)`. You may decide to call `pipeline.Cancel(error)` if you find some condition that you deem as a critical error in the pipeline. Let's say you need to do 20 calls to a rate-limited API, and you want to stop the pipeline if one call returns a rate-limit error:
+Pipeline errors occur when the pipeline gets canceled, either automatically by context cancellation, or manually by calling `pipeline.Cancel(error)`. You may decide to call `pipeline.Cancel(error)` if you find some condition that you deem as a critical error in the pipeline. Let's say you need to do 20 calls to a rate-limited API, and you want to stop the pipeline if one call returns a rate-limit error:
 
 ```go
 channel := jpipe.FromRange(pipeline, 1, 20).

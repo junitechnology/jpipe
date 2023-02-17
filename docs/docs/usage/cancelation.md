@@ -1,15 +1,15 @@
 ---
 layout: default
-title: Cancelation
+title: Cancellation
 nav_order: 1
 parent: Usage
 ---
 
-<h1>Cancelation</h1>
+<h1>Cancellation</h1>
 
-One of the main points of using JPipe is getting cancelation handled automatically. If you understand the importance of cancelation, or don't care much about it, feel free to skip this page. Otherwise, continue reading so you can understand the problem we are solving.
+One of the main points of using JPipe is getting cancellation handled automatically. If you understand the importance of cancellation, or don't care much about it, feel free to skip this page. Otherwise, continue reading so you can understand the problem we are solving.
 
-Simply put, using goroutines and channels without proper cancelation may lead to a goroutine leak, and eventually resource exhaustion. This may seem like a remote problem, but it's actually very easy to run into it:
+Simply put, using goroutines and channels without proper cancellation may lead to a goroutine leak, and eventually resource exhaustion. This may seem like a remote problem, but it's actually very easy to run into it:
 
 ```go
 func handleRequest(ctx context.Context) error {
@@ -33,7 +33,7 @@ If the context times out before `callAPI` gets its response, `handleRequest` wil
 
 <h2>Concurrent worker pools</h2>
 
-Since the main use case for JPipe is concurrent loads, let's see how mishandled cancelation can go wrong there. Let's imagine a requet handler now that executes some concurrent work.
+Since the main use case for JPipe is concurrent loads, let's see how mishandled cancellation can go wrong there. Let's imagine a requet handler now that executes some concurrent work.
 
 ```go
 func handleRequest(ctx context.Context) error {

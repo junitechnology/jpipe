@@ -63,7 +63,7 @@ pipeline = jpipe.NewPipeline(jpipe.Config{
 })
 ```
 
-The passed context can be `nil`, and in that case, no automatic cancelation will happen. Cancelation can be triggered manually though, by calling `pipeline.Cancel()`.
+The passed context can be `nil`, and in that case, no automatic cancellation will happen. Cancellation can be triggered manually though, by calling `pipeline.Cancel()`.
 
 If `StartManually` is `true`, the pipeline won't start until `pipeline.Start()` is called. This can be useful in complex pipelines with several sink operators, if you want to ensure that all pipeline operators will start simultaneously.
 
