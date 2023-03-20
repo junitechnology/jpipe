@@ -32,20 +32,20 @@ func cancelPipeline(pipeline *jpipe.Pipeline) {
 	time.Sleep(time.Millisecond) // give some time for the cancellation to propagate
 }
 
-func assertChannelClosed[T any](t *testing.T, channel <-chan T) {
+func assertChannelClosed[T any](t *testing.T, channel <-chan T, timeout time.Duration) {
 	select {
 	case _, open := <-channel:
 		assert.False(t, open, "Channel should be closed but a value was received")
-	default:
+	case <-time.After(timeout):
 		assert.Fail(t, "Channel should be closed")
 	}
 }
 
-func assertChannelOpenButNoValue[T any](t *testing.T, channel <-chan T) {
+func assertChannelOpenButNoValue[T any](t *testing.T, channel <-chan T, timeout time.Duration) {
 	select {
 	case _, open := <-channel:
 		assert.False(t, open, "Channel should be open but a value should not be received")
-	default:
+	case <-time.After(timeout):
 	}
 }
 

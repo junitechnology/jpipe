@@ -59,7 +59,7 @@ func TestMerge(t *testing.T) {
 		readGoChannel(goChannel, 3)
 		cancelPipeline(pipeline)
 
-		assertChannelClosed(t, goChannel)
+		assertChannelClosed(t, goChannel, 10*time.Millisecond)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 }
@@ -88,7 +88,7 @@ func TestConcat(t *testing.T) {
 		readGoChannel(goChannel, 4)
 		cancelPipeline(pipeline)
 
-		assertChannelClosed(t, goChannel)
+		assertChannelClosed(t, goChannel, 10*time.Millisecond)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 }

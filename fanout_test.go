@@ -57,8 +57,8 @@ func TestSplit(t *testing.T) {
 		<-goChannel2
 		cancelPipeline(pipeline)
 
-		assertChannelClosed(t, goChannel1)
-		assertChannelClosed(t, goChannel2)
+		assertChannelClosed(t, goChannel1, 10*time.Millisecond)
+		assertChannelClosed(t, goChannel2, 10*time.Millisecond)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 }
@@ -93,8 +93,8 @@ func TestBroadcast(t *testing.T) {
 		<-goChannel2
 		cancelPipeline(pipeline)
 
-		assertChannelClosed(t, goChannel1)
-		assertChannelClosed(t, goChannel2)
+		assertChannelClosed(t, goChannel1, 10*time.Millisecond)
+		assertChannelClosed(t, goChannel2, 10*time.Millisecond)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 }

@@ -31,7 +31,7 @@ func TestFromSlice(t *testing.T) {
 		readGoChannel(goChannel, 2)
 		cancelPipeline(pipeline)
 
-		assertChannelClosed(t, goChannel)
+		assertChannelClosed(t, goChannel, 10*time.Millisecond)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 }
@@ -53,7 +53,7 @@ func TestFromRange(t *testing.T) {
 		readGoChannel(goChannel, 2)
 		cancelPipeline(pipeline)
 
-		assertChannelClosed(t, goChannel)
+		assertChannelClosed(t, goChannel, 10*time.Millisecond)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 }
@@ -77,7 +77,7 @@ func TestFromGenerator(t *testing.T) {
 		readGoChannel(goChannel, 2)
 		cancelPipeline(pipeline)
 
-		assertChannelClosed(t, goChannel)
+		assertChannelClosed(t, goChannel, 10*time.Millisecond)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 }

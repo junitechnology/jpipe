@@ -12,11 +12,14 @@ import (
 func TestPipelineDoneWhenContextDone(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	pipeline := jpipe.NewPipeline(jpipe.Config{Context: ctx})
-	jpipe.FromSlice(pipeline, []int{1, 2, 3}).ToSlice()
+	jpipe.
+		FromSlice(pipeline, []int{1, 2, 3}).
+		Interval(func(value int) time.Duration { return 100 * time.Millisecond }).
+		ToSlice()
 
 	select {
 	case <-pipeline.Done():
-		assert.Fail(t, "Pipeline must not me done initially")
+		assert.Fail(t, "Pipeline must not be done initially")
 	default:
 	}
 	assert.False(t, pipeline.IsDone())

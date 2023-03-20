@@ -33,7 +33,7 @@ func TestMap(t *testing.T) {
 		readGoChannel(goChannel, 2)
 		cancelPipeline(pipeline)
 
-		assertChannelClosed(t, goChannel)
+		assertChannelClosed(t, goChannel, 10*time.Millisecond)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 
@@ -115,7 +115,7 @@ func TestFlatMap(t *testing.T) {
 		readGoChannel(goChannel, 4)
 		cancelPipeline(pipeline)
 
-		assertChannelClosed(t, goChannel)
+		assertChannelClosed(t, goChannel, 10*time.Millisecond)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 
@@ -138,6 +138,7 @@ func TestFlatMap(t *testing.T) {
 	})
 }
 
+// TODO: Improve this test, the setup is awkward
 func TestBatch(t *testing.T) {
 	t.Run("Batches values based on size only", func(t *testing.T) {
 		pipeline := jpipe.New(context.TODO())
@@ -156,12 +157,19 @@ func TestBatch(t *testing.T) {
 		channel := jpipe.FromGoChannel(pipeline, sourceGoChannel)
 		batchedChannel := jpipe.Batch(channel, 0, 100*time.Millisecond)
 
-		time.AfterFunc(0, func() { sourceGoChannel <- 1 })
-		time.AfterFunc(40*time.Millisecond, func() { sourceGoChannel <- 2 })
-		time.AfterFunc(60*time.Millisecond, func() { sourceGoChannel <- 3 })
-		time.AfterFunc(150*time.Millisecond, func() { sourceGoChannel <- 4 })
-		time.AfterFunc(350*time.Millisecond, func() { sourceGoChannel <- 5 })
-		time.AfterFunc(380*time.Millisecond, func() { close(sourceGoChannel) })
+		go func() {
+			sourceGoChannel <- 1
+			<-time.After(40 * time.Millisecond) // 40
+			sourceGoChannel <- 2
+			<-time.After(20 * time.Millisecond) // 60
+			sourceGoChannel <- 3
+			<-time.After(90 * time.Millisecond) // 150
+			sourceGoChannel <- 4
+			<-time.After(200 * time.Millisecond) // 350
+			sourceGoChannel <- 5
+			<-time.After(30 * time.Millisecond) // 380
+			close(sourceGoChannel)
+		}()
 		batchedValues := drainChannel(batchedChannel)
 
 		assert.Equal(t, [][]int{{1, 2, 3}, {4}, {}, {5}}, batchedValues)
@@ -174,11 +182,17 @@ func TestBatch(t *testing.T) {
 		channel := jpipe.FromGoChannel(pipeline, sourceGoChannel)
 		batchedChannel := jpipe.Batch(channel, 2, 100*time.Millisecond)
 
-		time.AfterFunc(0, func() { sourceGoChannel <- 1 })
-		time.AfterFunc(40*time.Millisecond, func() { sourceGoChannel <- 2 })
-		time.AfterFunc(60*time.Millisecond, func() { sourceGoChannel <- 3 })
-		time.AfterFunc(280*time.Millisecond, func() { sourceGoChannel <- 4 })
-		time.AfterFunc(300*time.Millisecond, func() { close(sourceGoChannel) })
+		go func() {
+			sourceGoChannel <- 1
+			<-time.After(40 * time.Millisecond) // 40
+			sourceGoChannel <- 2
+			<-time.After(20 * time.Millisecond) // 60
+			sourceGoChannel <- 3
+			<-time.After(220 * time.Millisecond) // 280
+			sourceGoChannel <- 4
+			<-time.After(20 * time.Millisecond) // 300
+			close(sourceGoChannel)
+		}()
 		batchedValues := drainChannel(batchedChannel)
 
 		assert.Equal(t, [][]int{{1, 2}, {3}, {}, {4}}, batchedValues)
@@ -191,12 +205,19 @@ func TestBatch(t *testing.T) {
 		channel := jpipe.FromGoChannel(pipeline, sourceGoChannel)
 		batchedChannel := jpipe.Batch(channel, 2, 100*time.Millisecond)
 
-		time.AfterFunc(0, func() { sourceGoChannel <- 1 })
-		time.AfterFunc(40*time.Millisecond, func() { sourceGoChannel <- 2 })
-		time.AfterFunc(60*time.Millisecond, func() { sourceGoChannel <- 3 })
-		time.AfterFunc(180*time.Millisecond, func() { cancelPipeline(pipeline) })
-		time.AfterFunc(280*time.Millisecond, func() { sourceGoChannel <- 4 })
-		time.AfterFunc(300*time.Millisecond, func() { close(sourceGoChannel) })
+		go func() {
+			sourceGoChannel <- 1
+			<-time.After(40 * time.Millisecond) // 40
+			sourceGoChannel <- 2
+			<-time.After(20 * time.Millisecond) // 60
+			sourceGoChannel <- 3
+			<-time.After(120 * time.Millisecond) // 180
+			cancelPipeline(pipeline)
+			<-time.After(100 * time.Millisecond) // 280
+			sourceGoChannel <- 4
+			<-time.After(20 * time.Millisecond) // 300
+			close(sourceGoChannel)
+		}()
 		batchedValues := drainChannel(batchedChannel)
 
 		assert.Equal(t, [][]int{{1, 2}, {3}}, batchedValues)
@@ -225,7 +246,7 @@ func TestWrap(t *testing.T) {
 		readGoChannel(goChannel, 2)
 		cancelPipeline(pipeline)
 
-		assertChannelClosed(t, goChannel)
+		assertChannelClosed(t, goChannel, 10*time.Millisecond)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 }

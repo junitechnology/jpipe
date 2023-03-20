@@ -22,6 +22,7 @@ func TestForEach(t *testing.T) {
 		})
 
 		assert.Equal(t, []int{1, 2, 3}, values)
+		assert.NoError(t, pipeline.Error())
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 
@@ -59,6 +60,7 @@ func TestForEach(t *testing.T) {
 		slices.Sort(values) // The output order with concurrency is unpredictable
 		assert.Equal(t, []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, values)
 		assert.Less(t, elapsed, 40*time.Millisecond) // It would have taken 100ms serially, but it takes about 20ms with 10 elements and concurrency 5
+		assert.NoError(t, pipeline.Error())
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 }
@@ -71,6 +73,7 @@ func TestReduce(t *testing.T) {
 		result := <-jpipe.Reduce(channel, func(acc int64, value int) int64 { return acc + int64(value) })
 
 		assert.Equal(t, int64(6), result)
+		assert.NoError(t, pipeline.Error())
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 
@@ -100,6 +103,7 @@ func TestCount(t *testing.T) {
 		result := <-channel.Count()
 
 		assert.Equal(t, int64(3), result)
+		assert.NoError(t, pipeline.Error())
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 
@@ -129,6 +133,7 @@ func TestToSlice(t *testing.T) {
 	actual := <-channel.ToSlice()
 
 	assert.Equal(t, slice, actual)
+	assert.NoError(t, pipeline.Error())
 	assertPipelineDone(t, pipeline, 10*time.Millisecond)
 }
 
@@ -140,6 +145,7 @@ func TestToMap(t *testing.T) {
 		actual := <-jpipe.ToMap(channel, func(i int) int { return i % 10 }, jpipe.KeepFirst())
 
 		assert.Equal(t, map[int]int{1: 11, 2: 42, 3: 73}, actual)
+		assert.NoError(t, pipeline.Error())
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 
@@ -150,6 +156,7 @@ func TestToMap(t *testing.T) {
 		actual := <-jpipe.ToMap(channel, func(i int) int { return i % 10 }, jpipe.KeepLast())
 
 		assert.Equal(t, map[int]int{1: 31, 2: 22, 3: 73}, actual)
+		assert.NoError(t, pipeline.Error())
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 }
@@ -163,6 +170,7 @@ func TestLast(t *testing.T) {
 		last := <-channel.Last()
 
 		assert.Equal(t, 3, last)
+		assert.NoError(t, pipeline.Error())
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 
@@ -174,6 +182,7 @@ func TestLast(t *testing.T) {
 		_, open := <-channel.Last()
 
 		assert.False(t, open)
+		assert.NoError(t, pipeline.Error())
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 }
@@ -188,11 +197,12 @@ func TestAny(t *testing.T) {
 		goChannel <- 1
 		goChannel <- 2
 		goChannel <- 3
-		assertChannelOpenButNoValue(t, resultChannel)
+		assertChannelOpenButNoValue(t, resultChannel, 10*time.Millisecond)
 		goChannel <- 4
 		result := <-resultChannel
 
 		assert.True(t, result)
+		assert.NoError(t, pipeline.Error())
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 
@@ -203,6 +213,7 @@ func TestAny(t *testing.T) {
 		result := <-channel.Any(func(i int) bool { return i > 3 })
 
 		assert.False(t, result)
+		assert.NoError(t, pipeline.Error())
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 
@@ -234,11 +245,12 @@ func TestAll(t *testing.T) {
 		goChannel <- 1
 		goChannel <- 2
 		goChannel <- 3
-		assertChannelOpenButNoValue(t, resultChannel)
+		assertChannelOpenButNoValue(t, resultChannel, 10*time.Millisecond)
 		goChannel <- 4
 		result := <-resultChannel
 
 		assert.False(t, result)
+		assert.NoError(t, pipeline.Error())
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 
@@ -249,6 +261,7 @@ func TestAll(t *testing.T) {
 		result := <-channel.Any(func(i int) bool { return i <= 3 })
 
 		assert.True(t, result)
+		assert.NoError(t, pipeline.Error())
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 
@@ -280,11 +293,12 @@ func TestNone(t *testing.T) {
 		goChannel <- 1
 		goChannel <- 2
 		goChannel <- 3
-		assertChannelOpenButNoValue(t, resultChannel)
+		assertChannelOpenButNoValue(t, resultChannel, 10*time.Millisecond)
 		goChannel <- 4
 		result := <-resultChannel
 
 		assert.False(t, result)
+		assert.NoError(t, pipeline.Error())
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 
@@ -295,6 +309,7 @@ func TestNone(t *testing.T) {
 		result := <-channel.None(func(i int) bool { return i > 3 })
 
 		assert.True(t, result)
+		assert.NoError(t, pipeline.Error())
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 

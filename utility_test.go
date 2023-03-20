@@ -89,7 +89,7 @@ func TestTap(t *testing.T) {
 		time.Sleep(time.Millisecond) // give some time for the third value to pass the tap
 		cancelPipeline(pipeline)
 
-		assertChannelClosed(t, goChannel)
+		assertChannelClosed(t, goChannel, 10*time.Millisecond)
 		assert.Less(t, len(goChannel), 7)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
@@ -186,7 +186,7 @@ func TestInterval(t *testing.T) {
 		readGoChannel(goChannel, 2)
 		cancelPipeline(pipeline)
 
-		assertChannelClosed(t, goChannel)
+		assertChannelClosed(t, goChannel, 10*time.Millisecond)
 		assertPipelineDone(t, pipeline, 60*time.Millisecond)
 	})
 }

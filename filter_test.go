@@ -31,7 +31,7 @@ func TestFilter(t *testing.T) {
 		readGoChannel(goChannel, 2)
 		cancelPipeline(pipeline)
 
-		assertChannelClosed(t, goChannel)
+		assertChannelClosed(t, goChannel, 10*time.Millisecond)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 
@@ -106,7 +106,7 @@ func TestSkip(t *testing.T) {
 		readGoChannel(goChannel, 2)
 		cancelPipeline(pipeline)
 
-		assertChannelClosed(t, goChannel)
+		assertChannelClosed(t, goChannel, 10*time.Millisecond)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 }
@@ -130,7 +130,7 @@ func TestTake(t *testing.T) {
 		readGoChannel(goChannel, 2)
 		cancelPipeline(pipeline)
 
-		assertChannelClosed(t, goChannel)
+		assertChannelClosed(t, goChannel, 10*time.Millisecond)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 }
@@ -156,7 +156,7 @@ func TestDistinct(t *testing.T) {
 		readGoChannel(goChannel, 3)
 		cancelPipeline(pipeline)
 
-		assertChannelClosed(t, goChannel)
+		assertChannelClosed(t, goChannel, 10*time.Millisecond)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 }

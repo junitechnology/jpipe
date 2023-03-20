@@ -97,7 +97,9 @@ func (p *Pipeline) Cancel(err error) {
 	p.lock.Lock()
 	defer p.lock.Unlock()
 	if !p.IsDone() { // no further action needed if the pipeline was already done
-		p.err = err
+		if err != nil { // the if condition avoids a race condition when accessing Error()
+			p.err = err
+		}
 		close(p.done)
 	}
 }
