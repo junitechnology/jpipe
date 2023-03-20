@@ -38,7 +38,8 @@ func Reduce[T any, R any](input *Channel[T], reducer func(R, T) R) <-chan R {
 		})
 	}
 
-	return resultChannel(newSinkPipelineNode("Reduce", input, worker), func() *R { return &state })
+	node := newSinkPipelineNode("Reduce", input, worker)
+	return resultChannel(node, func(ch chan R) { ch <- state })
 }
 
 // ToSlice puts all values coming from the input channel in a slice.
@@ -60,7 +61,8 @@ func (input *Channel[T]) ToSlice() <-chan []T {
 		})
 	}
 
-	return resultChannel(newSinkPipelineNode("ToSlice", input, worker), func() *[]T { return &slice })
+	node := newSinkPipelineNode("ToSlice", input, worker)
+	return resultChannel(node, func(ch chan []T) { ch <- slice })
 }
 
 // ToMap puts all values coming from the input channel in a map, using the getKey parameter to calculate the key.
@@ -88,7 +90,8 @@ func ToMap[T any, K comparable](input *Channel[T], getKey func(T) K, opts ...opt
 		})
 	}
 
-	return resultChannel(newSinkPipelineNode("ToMap", input, worker, getNodeOptions(opts)...), func() *map[K]T { return &resultMap })
+	node := newSinkPipelineNode("ToMap", input, worker, getNodeOptions(opts)...)
+	return resultChannel(node, func(ch chan map[K]T) { ch <- resultMap })
 }
 
 // ToGoChannel sends all values from the input channel to the returned Go channel.
@@ -136,15 +139,24 @@ func (input *Channel[T]) ToGoChannel() <-chan T {
 //  input : 0--1--2--3------X
 //  output: ----------------3
 func (input *Channel[T]) Last() <-chan T {
-	var lastValue *T
+	var gotValue bool
+	var lastValue T
 	worker := func(node workerNode[T, any]) {
 		node.LoopInput(0, func(value T) bool {
-			lastValue = &value
+			gotValue = true
+			lastValue = value
 			return true
 		})
 	}
 
-	return resultChannel(newSinkPipelineNode("Last", input, worker), func() *T { return lastValue })
+	node := newSinkPipelineNode("Last", input, worker)
+	return resultChannel(node, func(ch chan T) {
+		if gotValue {
+			ch <- lastValue
+		} else {
+			close(ch)
+		}
+	})
 }
 
 // Count counts input values and sends the final count to the output channel.
@@ -165,7 +177,8 @@ func (input *Channel[T]) Count() <-chan int64 {
 		})
 	}
 
-	return resultChannel(newSinkPipelineNode("Count", input, worker), func() *int64 { return &count })
+	node := newSinkPipelineNode("Count", input, worker)
+	return resultChannel(node, func(ch chan int64) { ch <- count })
 }
 
 // Any determines if any input value matches the predicate.
@@ -194,7 +207,8 @@ func (input *Channel[T]) Any(predicate func(T) bool) <-chan bool {
 		})
 	}
 
-	return resultChannel(newSinkPipelineNode("Any", input, worker), func() *bool { return &result })
+	node := newSinkPipelineNode("Any", input, worker)
+	return resultChannel(node, func(ch chan bool) { ch <- result })
 }
 
 // All determines if all input values match the predicate.
@@ -223,7 +237,8 @@ func (input *Channel[T]) All(predicate func(T) bool) <-chan bool {
 		})
 	}
 
-	return resultChannel(newSinkPipelineNode("All", input, worker), func() *bool { return &result })
+	node := newSinkPipelineNode("All", input, worker)
+	return resultChannel(node, func(ch chan bool) { ch <- result })
 }
 
 // None determines if no input value matches the predicate.
@@ -252,19 +267,15 @@ func (input *Channel[T]) None(predicate func(T) bool) <-chan bool {
 		})
 	}
 
-	return resultChannel(newSinkPipelineNode("None", input, worker), func() *bool { return &result })
+	node := newSinkPipelineNode("None", input, worker)
+	return resultChannel(node, func(ch chan bool) { ch <- result })
 }
 
-func resultChannel[R any](node pipelineNode, result func() *R) <-chan R {
+func resultChannel[R any](node pipelineNode, doOnChannel func(chan R)) <-chan R {
 	resultCh := make(chan R, 1)
 	go func() {
 		<-node.Done()
-		r := result()
-		if r == nil {
-			close(resultCh)
-		} else {
-			resultCh <- *r
-		}
+		doOnChannel(resultCh)
 	}()
 
 	return resultCh
