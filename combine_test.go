@@ -7,6 +7,7 @@ import (
 
 	"github.com/junitechnology/jpipe"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/exp/slices"
 )
 
 func TestMerge(t *testing.T) {
@@ -44,6 +45,7 @@ func TestMerge(t *testing.T) {
 		}()
 
 		mergedValues := drainChannel(mergedChannel)
+		slices.Sort(mergedValues)
 
 		assert.Equal(t, []int{1, 2, 3, 4, 5, 6, 7, 8, 9}, mergedValues)
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
