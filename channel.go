@@ -46,3 +46,7 @@ func (c *Channel[T]) getPipeline() *Pipeline {
 func (c *Channel[T]) getChannel() <-chan T {
 	return c.channel
 }
+
+func (c *Channel[T]) Pipeline() *Pipeline {
+	return c.pipeline
+}
