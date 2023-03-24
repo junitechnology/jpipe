@@ -139,3 +139,7 @@ func (p *Pipeline) addNode(node pipelineNode) {
 		}
 	}()
 }
+
+func (p *Pipeline) Context() context.Context {
+	return p.context
+}
