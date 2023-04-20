@@ -33,3 +33,22 @@ func TestPipelineDoneWhenContextDone(t *testing.T) {
 	assert.True(t, pipeline.IsDone())
 	assert.ErrorIs(t, pipeline.Error(), context.Canceled)
 }
+
+func TestPipelineRecoversFromPanicAndIncludesStacktrace(t *testing.T) {
+	pipeline := jpipe.NewPipeline(jpipe.Config{})
+	jpipe.
+		FromSlice(pipeline, []int{1, 2, 3}).
+		ForEach(func(value int) {
+			panic("panic")
+		})
+
+	select {
+	case <-pipeline.Done():
+	case <-time.After(time.Millisecond):
+		assert.Fail(t, "Pipeline must be done if context is canceled")
+	}
+	assert.True(t, pipeline.IsDone())
+	t.Logf("panic error:\n %v", pipeline.Error().Error())
+	assert.Contains(t, pipeline.Error().Error(), "panic")
+	assert.Contains(t, pipeline.Error().Error(), "TestPipelineRecoversFromPanicAndIncludesStacktrace") // this shows that the stacktrace is included
+}

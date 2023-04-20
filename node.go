@@ -2,6 +2,7 @@ package jpipe
 
 import (
 	"fmt"
+	"runtime/debug"
 	"sync"
 
 	"github.com/junitechnology/jpipe/options"
@@ -170,7 +171,7 @@ func (node *node[T, R]) LoopInput(i int, function func(value T) bool) {
 
 func (node *node[T, R]) HandlePanic() {
 	if r := recover(); r != nil {
-		node.pipeline.Cancel(fmt.Errorf("%v", r))
+		node.pipeline.Cancel(fmt.Errorf("%v: %s", r, debug.Stack()))
 	}
 }
 
