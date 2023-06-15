@@ -101,7 +101,7 @@ func TestTap(t *testing.T) {
 		start := time.Now()
 		channel := jpipe.FromSlice(pipeline, slice).
 			Tap(func(i int) {
-				time.Sleep(10 * time.Millisecond)
+				time.Sleep(100 * time.Millisecond)
 				valuesFromTap[i-1] = i // not using append to avoid the need for synchronization
 			}, jpipe.Concurrent(3))
 
@@ -112,7 +112,7 @@ func TestTap(t *testing.T) {
 		slices.Sort(outputValues) // The output order with concurrency is unpredictable
 		assert.Equal(t, slice, valuesFromTap)
 		assert.Equal(t, slice, outputValues)
-		assert.Less(t, elapsed, 30*time.Millisecond) // It would have taken 50ms serially, but it takes about 20ms with 5 elements and concurrency 3
+		assert.Less(t, elapsed, 300*time.Millisecond) // It would have taken 500ms serially, but it takes about 200ms with 5 elements and concurrency 3
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 
@@ -123,7 +123,7 @@ func TestTap(t *testing.T) {
 		start := time.Now()
 		channel := jpipe.FromSlice(pipeline, slice).
 			Tap(func(i int) {
-				time.Sleep(10 * time.Millisecond)
+				time.Sleep(100 * time.Millisecond)
 				valuesFromTap[i-1] = i // not using append to avoid the need for synchronization
 			}, jpipe.Concurrent(3), jpipe.Ordered(3))
 
@@ -133,7 +133,7 @@ func TestTap(t *testing.T) {
 		slices.Sort(valuesFromTap) // The tap execution order with concurrency is unpredictable
 		assert.Equal(t, slice, valuesFromTap)
 		assert.Equal(t, slice, outputValues)
-		assert.Less(t, elapsed, 30*time.Millisecond) // It would have taken 50ms serially, but it takes about 20ms with 5 elements and concurrency 3
+		assert.Less(t, elapsed, 300*time.Millisecond) // It would have taken 500ms serially, but it takes about 200ms with 5 elements and concurrency 3
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 

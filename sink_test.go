@@ -50,7 +50,7 @@ func TestForEach(t *testing.T) {
 		lock := sync.Mutex{}
 		start := time.Now()
 		<-channel.ForEach(func(value int) {
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(100 * time.Millisecond)
 			lock.Lock()
 			values = append(values, value)
 			lock.Unlock()
@@ -59,7 +59,7 @@ func TestForEach(t *testing.T) {
 
 		slices.Sort(values) // The output order with concurrency is unpredictable
 		assert.Equal(t, []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, values)
-		assert.Less(t, elapsed, 40*time.Millisecond) // It would have taken 100ms serially, but it takes about 20ms with 10 elements and concurrency 5
+		assert.Less(t, elapsed, 400*time.Millisecond) // It would have taken 1000ms serially, but it takes about 200ms with 10 elements and concurrency 5
 		assert.NoError(t, pipeline.Error())
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})

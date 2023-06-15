@@ -42,7 +42,7 @@ func TestMap(t *testing.T) {
 		channel := jpipe.FromSlice(pipeline, []int{1, 2, 3, 4, 5})
 		start := time.Now()
 		mappedChannel := jpipe.Map(channel, func(i int) string {
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(100 * time.Millisecond)
 			return fmt.Sprintf("%dA", i)
 		}, jpipe.Concurrent(3))
 
@@ -51,7 +51,7 @@ func TestMap(t *testing.T) {
 
 		slices.Sort(mappedValues) // The output order with concurrency is unpredictable
 		assert.Equal(t, []string{"1A", "2A", "3A", "4A", "5A"}, mappedValues)
-		assert.Less(t, elapsed, 30*time.Millisecond) // It would have taken 50ms serially, but it takes about 20ms with 5 elements and concurrency 3
+		assert.Less(t, elapsed, 300*time.Millisecond) // It would have taken 500ms serially, but it takes about 200ms with 5 elements and concurrency 3
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 
@@ -60,7 +60,7 @@ func TestMap(t *testing.T) {
 		channel := jpipe.FromSlice(pipeline, []int{1, 2, 3, 4, 5})
 		start := time.Now()
 		mappedChannel := jpipe.Map(channel, func(i int) string {
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(100 * time.Millisecond)
 			return fmt.Sprintf("%dA", i)
 		}, jpipe.Concurrent(3), jpipe.Ordered(3))
 
@@ -68,7 +68,7 @@ func TestMap(t *testing.T) {
 		elapsed := time.Since(start)
 
 		assert.Equal(t, []string{"1A", "2A", "3A", "4A", "5A"}, mappedValues)
-		assert.Less(t, elapsed, 30*time.Millisecond) // It would have taken 50ms serially, but it takes about 20ms with 5 elements and concurrency 3
+		assert.Less(t, elapsed, 300*time.Millisecond) // It would have taken 500ms serially, but it takes about 200ms with 5 elements and concurrency 3
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 
@@ -124,7 +124,7 @@ func TestFlatMap(t *testing.T) {
 		channel := jpipe.FromSlice(pipeline, []int{1, 2, 3, 4, 5})
 		start := time.Now()
 		mappedChannel := jpipe.FlatMap(channel, func(i int) *jpipe.Channel[string] {
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(100 * time.Millisecond)
 			return jpipe.FromSlice(pipeline, []string{fmt.Sprintf("%dA", i), fmt.Sprintf("%dB", i)})
 		}, jpipe.Concurrent(3))
 
@@ -133,7 +133,7 @@ func TestFlatMap(t *testing.T) {
 
 		slices.Sort(mappedValues) // The output order with concurrency is unpredictable
 		assert.Equal(t, []string{"1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B", "5A", "5B"}, mappedValues)
-		assert.Less(t, elapsed, 30*time.Millisecond) // It would have taken 50ms serially, but it takes about 20ms with 5 elements and concurrency 3
+		assert.Less(t, elapsed, 300*time.Millisecond) // It would have taken 500ms serially, but it takes about 200ms with 5 elements and concurrency 3
 		assertPipelineDone(t, pipeline, 10*time.Millisecond)
 	})
 }
