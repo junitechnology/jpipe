@@ -1,3 +1,5 @@
+# ARCHIVED & NO LONGER ACTIVELY MAINTAINED
+
 # JPipe
 
 [![go report card](https://goreportcard.com/badge/github.com/go-gorm/gorm "go report card")](https://goreportcard.com/report/github.com/junitechnology/jpipe)
